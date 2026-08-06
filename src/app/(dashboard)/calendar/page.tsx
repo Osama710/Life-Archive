@@ -11,9 +11,10 @@ export default function CalendarPage() {
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
   const datesWithMemories = [1, 5, 10, 15, 20, 22, 25]
 
-  const days = Array.from({ length: firstDayOfMonth }, () => null).concat(
-    Array.from({ length: daysInMonth }, (_, i) => i + 1)
-  )
+  const days: (number | null)[] = [
+    ...Array.from({ length: firstDayOfMonth }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1)
+  ]
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
