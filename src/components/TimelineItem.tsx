@@ -4,6 +4,7 @@ interface TimelineItemProps {
   date: string
   title: string
   thumbnail?: string
+  selected?: boolean
   onClick?: () => void
 }
 
@@ -11,10 +12,16 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
   date,
   title,
   thumbnail,
+  selected = false,
   onClick,
 }) => {
   return (
-    <Card onClick={onClick} className="mb-4 cursor-pointer hover:shadow-lg">
+    <Card
+      onClick={onClick}
+      className={`mb-4 cursor-pointer hover:shadow-lg ${
+        selected ? 'ring-2 ring-blue-500' : ''
+      }`}
+    >
       <div className="flex gap-4">
         {thumbnail && (
           <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0">

@@ -27,6 +27,7 @@ export default function TimelinePage() {
             key={memory.id}
             date={memory.date}
             title={memory.title}
+            selected={selectedMemory === memory.id}
             onClick={() => setSelectedMemory(memory.id)}
           />
         ))}
