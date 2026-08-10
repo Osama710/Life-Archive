@@ -1,11 +1,9 @@
 'use client'
-import { useState } from 'react'
 import { useGetMemories } from '@/hooks/useApi'
 import Link from 'next/link'
 
 export default function TimelinePage() {
-  const [offset, setOffset] = useState(0)
-  const { data, isLoading } = useGetMemories('family-id', 20, offset)
+  const { data, isLoading } = useGetMemories('family-id', 20, 0)
   const memories = data?.memories || []
 
   if (isLoading) return <div className="spinner mx-auto mt-8"></div>
