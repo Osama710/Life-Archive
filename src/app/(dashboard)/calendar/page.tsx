@@ -1,86 +1,40 @@
 'use client'
-
 import { useState } from 'react'
-import { Card } from '@/components/Card'
 
 export default function CalendarPage() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 2)) // March 2026
-  const [selectedDate, setSelectedDate] = useState<number | null>(null)
+  const [date, setDate] = useState(new Date(2026, 2))
+  const days = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+  const first = new Date(date.getFullYear(), date.getMonth(), 1).getDay()
 
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate()
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay()
-  const datesWithMemories = [1, 5, 10, 15, 20, 22, 25]
-
-  const days: (number | null)[] = [
-    ...Array.from({ length: firstDayOfMonth }, () => null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1)
-  ]
-
-  const handlePrevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))
-  }
-
-  const handleNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))
-  }
+  const prev = () => setDate(new Date(date.getFullYear(), date.getMonth() - 1))
+  const next = () => setDate(new Date(date.getFullYear(), date.getMonth() + 1))
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-6">
-          <button onClick={handlePrevMonth} className="text-primary hover:text-primary-dark">
-            ←
-          </button>
-          <h2 className="text-2xl font-bold">
-            {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-          </h2>
-          <button onClick={handleNextMonth} className="text-primary hover:text-primary-dark">
-            →
-          </button>
+    <div className="max-w-2xl mx-auto">
+      <h1 className="text-4xl font-bold mb-8">📅 Calendar</h1>
+      
+      <div className="card-elevated p-8">
+        <div className="flex justify-between items-center mb-8">
+          <button onClick={prev} className="btn btn-secondary">←</button>
+          <h2 className="text-2xl font-bold">{date.toLocaleString('default', {month:'long', year:'numeric'})}</h2>
+          <button onClick={next} className="btn btn-secondary">→</button>
         </div>
 
         <div className="grid grid-cols-7 gap-2 mb-4">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-            <div key={day} className="text-center font-semibold text-gray-600 py-2">
-              {day}
-            </div>
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+            <div key={d} className="text-center font-bold text-gray-600 py-2">{d}</div>
           ))}
         </div>
 
         <div className="grid grid-cols-7 gap-2">
-          {days.map((day, idx) => (
-            <button
-              key={idx}
-              onClick={() => day && setSelectedDate(day)}
-              className={`p-3 rounded text-center ${
-                day === null
-                  ? ''
-                  : datesWithMemories.includes(day)
-                  ? 'bg-primary text-white font-bold'
-                  : 'bg-gray-100 hover:bg-gray-200'
-              } ${selectedDate === day ? 'ring-2 ring-primary' : ''}`}
-            >
-              {day}
+          {Array(first).fill(null).map((_, i) => <div key={`empty${i}`}></div>)}
+          {Array(days).fill(null).map((_, i) => (
+            <button key={i + 1} className="p-3 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 font-medium">
+              {i + 1}
             </button>
           ))}
         </div>
       </div>
-
-      {selectedDate && (
-        <Card>
-          <h3 className="font-bold mb-4">
-            {currentDate.toLocaleString('default', { month: 'long', day: 'numeric', year: 'numeric' })}
-          </h3>
-          {datesWithMemories.includes(selectedDate) ? (
-            <div className="space-y-2">
-              <p className="text-gray-600">First Smile</p>
-              <p className="text-gray-600">Family Visit</p>
-            </div>
-          ) : (
-            <p className="text-gray-600">No memories on this date</p>
-          )}
-        </Card>
-      )}
     </div>
   )
 }
