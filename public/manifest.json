@@ -28,34 +28,20 @@
       "purpose": "maskable"
     }
   ],
-  "screenshots": [
-    {
-      "src": "/screenshot1.png",
-      "sizes": "540x720",
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "/screenshot2.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
-    }
-  ],
   "categories": ["utilities", "productivity"],
   "shortcuts": [
     {
       "name": "Add Memory",
       "short_name": "Add",
       "description": "Quick add a new memory",
-      "url": "/memory/create",
+      "url": "/dashboard/memory/create",
       "icons": []
     },
     {
       "name": "Timeline",
       "short_name": "Timeline",
       "description": "View timeline",
-      "url": "/timeline",
+      "url": "/dashboard/timeline",
       "icons": []
     }
   ]

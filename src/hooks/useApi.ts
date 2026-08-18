@@ -1,59 +1,94 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
-import type { Memory, Family, Child, Collection } from '@/lib/types/db'
+import { mapChild, mapCollection, mapFamily, mapMemory } from '@/lib/data/mappers'
+import type { Child, Memory } from '@/lib/types/db'
+import type { TablesUpdate } from '@/lib/types/database'
 
 const supabase = createClient()
 
-// ============ FAMILIES ============
+interface CreateMemoryInput {
+  familyId: string
+  childId?: string
+  milestoneId?: string
+  title: string
+  description?: string
+  memoryDate: string
+  memoryTime?: string
+  location?: string
+  mood?: string
+  status?: Memory['status']
+  isFavorite?: boolean
+  isPrivate?: boolean
+  createdBy: string
+}
 
-export const useGetFamilies = () => {
-  return useQuery({
+interface CreateCollectionInput {
+  familyId: string
+  name: string
+  description?: string
+  createdBy: string
+}
+
+interface GrowthRecordInput {
+  child_id: string
+  measurement_date: string
+  height_cm?: number
+  weight_kg?: number
+  head_circumference_cm?: number
+  notes?: string
+  created_by: string
+}
+
+export const useGetFamilies = (enabled = true) =>
+  useQuery({
     queryKey: ['families'],
+    enabled,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('families')
         .select('*')
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
       if (error) throw error
-      return data as Family[]
+      return data.map(mapFamily)
     },
   })
-}
 
 export const useCreateFamily = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (name: string) => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (!user) throw new Error('You must be signed in to create a family.')
       const { data, error } = await supabase
         .from('families')
-        .insert([{ name }])
+        .insert({ name, created_by: user.id })
         .select()
+        .single()
       if (error) throw error
-      return data[0]
+      return mapFamily(data)
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['families'] })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['families'] }),
   })
 }
 
-// ============ CHILDREN ============
-
-export const useGetChildren = (familyId: string) => {
-  return useQuery({
+export const useGetChildren = (familyId: string) =>
+  useQuery({
     queryKey: ['children', familyId],
+    enabled: !!familyId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('children')
         .select('*')
         .eq('family_id', familyId)
+        .is('deleted_at', null)
         .order('birth_date', { ascending: false })
       if (error) throw error
-      return data as Child[]
+      return data.map(mapChild)
     },
-    enabled: !!familyId,
   })
-}
 
 export const useCreateChild = () => {
   const queryClient = useQueryClient()
@@ -61,22 +96,30 @@ export const useCreateChild = () => {
     mutationFn: async (child: Omit<Child, 'id' | 'createdAt' | 'updatedAt'>) => {
       const { data, error } = await supabase
         .from('children')
-        .insert([child])
+        .insert({
+          family_id: child.familyId,
+          name: child.name,
+          birth_date: child.birthDate,
+          conception_date: child.conceptionDate,
+          gender: child.gender,
+          photo_url: child.photoUrl,
+          journey_type: child.journeyType,
+          created_by: child.createdBy,
+        })
         .select()
+        .single()
       if (error) throw error
-      return data[0]
+      return mapChild(data)
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['children', data.family_id] })
-    },
+    onSuccess: (data) =>
+      queryClient.invalidateQueries({ queryKey: ['children', data.familyId] }),
   })
 }
 
-// ============ MEMORIES ============
-
-export const useGetMemories = (familyId: string, limit = 20, offset = 0) => {
-  return useQuery({
+export const useGetMemories = (familyId: string, limit = 20, offset = 0) =>
+  useQuery({
     queryKey: ['memories', familyId, offset],
+    enabled: !!familyId,
     queryFn: async () => {
       const { data, error, count } = await supabase
         .from('memories')
@@ -86,15 +129,14 @@ export const useGetMemories = (familyId: string, limit = 20, offset = 0) => {
         .order('memory_date', { ascending: false })
         .range(offset, offset + limit - 1)
       if (error) throw error
-      return { memories: data as Memory[], total: count || 0 }
+      return { memories: data.map((row) => mapMemory(row)), total: count || 0 }
     },
-    enabled: !!familyId,
   })
-}
 
-export const useGetMemory = (memoryId: string) => {
-  return useQuery({
+export const useGetMemory = (memoryId: string) =>
+  useQuery({
     queryKey: ['memory', memoryId],
+    enabled: !!memoryId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('memories')
@@ -102,26 +144,38 @@ export const useGetMemory = (memoryId: string) => {
         .eq('id', memoryId)
         .single()
       if (error) throw error
-      return data as Memory
+      return mapMemory(data)
     },
-    enabled: !!memoryId,
   })
-}
 
 export const useCreateMemory = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (memory: Omit<Memory, 'id' | 'createdAt' | 'updatedAt'>) => {
+    mutationFn: async (memory: CreateMemoryInput) => {
       const { data, error } = await supabase
         .from('memories')
-        .insert([memory])
-        .select()
+        .insert({
+          family_id: memory.familyId,
+          child_id: memory.childId,
+          milestone_id: memory.milestoneId,
+          title: memory.title,
+          description: memory.description,
+          memory_date: memory.memoryDate,
+          memory_time: memory.memoryTime,
+          location: memory.location,
+          mood: memory.mood,
+          status: memory.status ?? 'published',
+          is_favorite: memory.isFavorite ?? false,
+          is_private: memory.isPrivate ?? true,
+          created_by: memory.createdBy,
+        })
+        .select('*, memory_media(*)')
+        .single()
       if (error) throw error
-      return data[0]
+      return mapMemory(data)
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['memories', data.family_id] })
-    },
+    onSuccess: (data) =>
+      queryClient.invalidateQueries({ queryKey: ['memories', data.familyId] }),
   })
 }
 
@@ -129,16 +183,30 @@ export const useUpdateMemory = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Memory> & { id: string }) => {
+      const payload: TablesUpdate<'memories'> = {}
+      if (updates.title !== undefined) payload.title = updates.title
+      if (updates.description !== undefined) payload.description = updates.description
+      if (updates.memoryDate !== undefined) payload.memory_date = updates.memoryDate
+      if (updates.memoryTime !== undefined) payload.memory_time = updates.memoryTime
+      if (updates.location !== undefined) payload.location = updates.location
+      if (updates.mood !== undefined) payload.mood = updates.mood
+      if (updates.status !== undefined) payload.status = updates.status
+      if (updates.isFavorite !== undefined) payload.is_favorite = updates.isFavorite
+      if (updates.isPrivate !== undefined) payload.is_private = updates.isPrivate
+      if (updates.updatedBy !== undefined) payload.updated_by = updates.updatedBy
+      if (updates.version !== undefined) payload.version = updates.version
+
       const { data, error } = await supabase
         .from('memories')
-        .update(updates)
+        .update(payload)
         .eq('id', id)
-        .select()
+        .select('*, memory_media(*)')
+        .single()
       if (error) throw error
-      return data[0]
+      return mapMemory(data)
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['memories', data.family_id] })
+      queryClient.invalidateQueries({ queryKey: ['memories', data.familyId] })
       queryClient.invalidateQueries({ queryKey: ['memory', data.id] })
     },
   })
@@ -148,96 +216,139 @@ export const useDeleteMemory = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (memoryId: string) => {
+      const now = new Date()
+      const purge = new Date(now)
+      purge.setDate(purge.getDate() + 30)
       const { error } = await supabase
         .from('memories')
-        .update({ deleted_at: new Date().toISOString() })
+        .update({
+          deleted_at: now.toISOString(),
+          purge_after: purge.toISOString(),
+          status: 'deleted',
+        })
+        .eq('id', memoryId)
+      if (error) throw error
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['memories'] }),
+  })
+}
+
+export const useGetDeletedMemories = (familyId: string) =>
+  useQuery({
+    queryKey: ['memories-deleted', familyId],
+    enabled: !!familyId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('memories')
+        .select('*, memory_media(*)')
+        .eq('family_id', familyId)
+        .not('deleted_at', 'is', null)
+        .order('deleted_at', { ascending: false })
+      if (error) throw error
+      return data.map((row) => mapMemory(row))
+    },
+  })
+
+export const useRestoreMemory = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (memoryId: string) => {
+      const { error } = await supabase
+        .from('memories')
+        .update({
+          deleted_at: null,
+          purge_after: null,
+          status: 'published',
+        })
         .eq('id', memoryId)
       if (error) throw error
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['memories'] })
+      queryClient.invalidateQueries({ queryKey: ['memories-deleted'] })
     },
   })
 }
 
-// ============ COLLECTIONS ============
-
-export const useGetCollections = (familyId: string) => {
-  return useQuery({
+export const useGetCollections = (familyId: string) =>
+  useQuery({
     queryKey: ['collections', familyId],
+    enabled: !!familyId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('collections')
         .select('*')
         .eq('family_id', familyId)
+        .is('deleted_at', null)
         .order('created_at', { ascending: false })
       if (error) throw error
-      return data as Collection[]
+      return data.map(mapCollection)
     },
-    enabled: !!familyId,
   })
-}
 
 export const useCreateCollection = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (collection: Omit<Collection, 'id' | 'createdAt' | 'updatedAt'>) => {
+    mutationFn: async (collection: CreateCollectionInput) => {
       const { data, error } = await supabase
         .from('collections')
-        .insert([collection])
+        .insert({
+          family_id: collection.familyId,
+          name: collection.name,
+          description: collection.description,
+          created_by: collection.createdBy,
+        })
         .select()
+        .single()
       if (error) throw error
-      return data[0]
+      return mapCollection(data)
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['collections', data.family_id] })
-    },
+    onSuccess: (data) =>
+      queryClient.invalidateQueries({ queryKey: ['collections', data.familyId] }),
   })
 }
 
 export const useAddMemoryToCollection = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ collectionId, memoryId }: { collectionId: string; memoryId: string }) => {
+    mutationFn: async ({
+      collectionId,
+      memoryId,
+    }: {
+      collectionId: string
+      memoryId: string
+    }) => {
       const { error } = await supabase
         .from('memory_collections')
-        .insert([{ collection_id: collectionId, memory_id: memoryId }])
+        .insert({ collection_id: collectionId, memory_id: memoryId })
       if (error) throw error
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['collections'] })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['collections'] }),
   })
 }
 
-// ============ SEARCH ============
-
-export const useSearchMemories = (familyId: string, query: string) => {
-  return useQuery({
+export const useSearchMemories = (familyId: string, query: string) =>
+  useQuery({
     queryKey: ['search', familyId, query],
+    enabled: !!familyId && query.trim().length > 0,
     queryFn: async () => {
-      if (!query.trim()) return []
-      
+      const term = query.trim().replace(/[%(),]/g, '')
       const { data, error } = await supabase
         .from('memories')
-        .select('*')
+        .select('*, memory_media(*)')
         .eq('family_id', familyId)
-        .or(`title.ilike.%${query}%,description.ilike.%${query}%`)
+        .or(`title.ilike.%${term}%,description.ilike.%${term}%`)
         .is('deleted_at', null)
         .order('memory_date', { ascending: false })
-      
       if (error) throw error
-      return data as Memory[]
+      return data.map(mapMemory)
     },
-    enabled: !!familyId && query.length > 0,
   })
-}
 
-// ============ GROWTH ============
-
-export const useGetGrowthRecords = (childId: string) => {
-  return useQuery({
+export const useGetGrowthRecords = (childId: string) =>
+  useQuery({
     queryKey: ['growth', childId],
+    enabled: !!childId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('growth_records')
@@ -247,23 +358,21 @@ export const useGetGrowthRecords = (childId: string) => {
       if (error) throw error
       return data
     },
-    enabled: !!childId,
   })
-}
 
 export const useAddGrowthRecord = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (record: any) => {
+    mutationFn: async (record: GrowthRecordInput) => {
       const { data, error } = await supabase
         .from('growth_records')
-        .insert([record])
+        .insert(record)
         .select()
+        .single()
       if (error) throw error
-      return data[0]
+      return data
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['growth', data.child_id] })
-    },
+    onSuccess: (data) =>
+      queryClient.invalidateQueries({ queryKey: ['growth', data.child_id] }),
   })
 }

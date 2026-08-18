@@ -1,33 +1,53 @@
-import type { Metadata, Viewport } from "next"
-import Script from "next/script"
-import { AuthProvider } from "@/context/AuthContext"
-import { QueryProvider } from "@/context/QueryProvider"
-import "./globals.css"
+import type { Metadata, Viewport } from "next";
+import { Fraunces, Source_Sans_3 } from "next/font/google";
+import Script from "next/script";
+import { AuthProvider } from "@/context/AuthContext";
+import { FamilyProvider } from "@/context/FamilyContext";
+import { QueryProvider } from "@/context/QueryProvider";
+import "./globals.css";
+
+const display = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+});
+
+const sans = Source_Sans_3({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
 
 export const metadata: Metadata = {
   title: "Life Archive",
-  description: "Family legacy preservation platform",
-  manifest: '/manifest.json',
-}
+  description: "Preserve your family's story across generations",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Life Archive",
+  },
+};
 
 export const viewport: Viewport = {
-  themeColor: '#2563EB',
-}
+  themeColor: "#3B6FD4",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className="bg-white text-gray-900 antialiased">
+      <body className="bg-stone-50 text-stone-950 antialiased">
         <QueryProvider>
           <AuthProvider>
-            {children}
+            <FamilyProvider>{children}</FamilyProvider>
           </AuthProvider>
         </QueryProvider>
         <Script id="register-sw" strategy="afterInteractive">
@@ -39,5 +59,5 @@ export default function RootLayout({
         </Script>
       </body>
     </html>
-  )
+  );
 }

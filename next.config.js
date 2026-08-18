@@ -1,14 +1,57 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**.cloudinary.com',
+        protocol: "https",
+        hostname: "**.cloudinary.com",
       },
     ],
+  },
+  async redirects() {
+    const dashboardRoutes = [
+      "timeline",
+      "calendar",
+      "collections",
+      "search",
+      "family",
+      "growth",
+      "settings",
+      "letters",
+      "on-this-day",
+    ];
+
+    return [
+      { source: "/", destination: "/dashboard", permanent: false },
+      ...dashboardRoutes.map((route) => ({
+        source: `/${route}`,
+        destination: `/dashboard/${route}`,
+        permanent: false,
+      })),
+      {
+        source: "/memory/:path*",
+        destination: "/dashboard/memory/:path*",
+        permanent: false,
+      },
+      { source: "/family-setup", destination: "/onboarding", permanent: false },
+    ];
+  },
+  async headers() {
+    return [
+      {
+        source: "/(.*)",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(self), microphone=(self), geolocation=(self)",
+          },
+        ],
+      },
+    ];
   },
 };
 

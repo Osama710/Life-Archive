@@ -1,11 +1,12 @@
-import { Card } from './Card'
+import Image from "next/image";
+import { Card } from "./Card";
 
 interface TimelineItemProps {
-  date: string
-  title: string
-  thumbnail?: string
-  selected?: boolean
-  onClick?: () => void
+  date: string;
+  title: string;
+  thumbnail?: string;
+  selected?: boolean;
+  onClick?: () => void;
 }
 
 export const TimelineItem: React.FC<TimelineItemProps> = ({
@@ -19,13 +20,19 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
     <Card
       onClick={onClick}
       className={`mb-4 cursor-pointer hover:shadow-lg ${
-        selected ? 'ring-2 ring-blue-500' : ''
+        selected ? "ring-2 ring-blue-500" : ""
       }`}
     >
       <div className="flex gap-4">
         {thumbnail && (
           <div className="w-24 h-24 bg-gray-200 rounded-lg flex-shrink-0">
-            <img src={thumbnail} alt={title} className="w-full h-full object-cover rounded-lg" />
+            <Image
+              src={thumbnail}
+              alt={title}
+              width={96}
+              height={96}
+              className="h-full w-full rounded-lg object-cover"
+            />
           </div>
         )}
         <div className="flex-1">
@@ -34,5 +41,5 @@ export const TimelineItem: React.FC<TimelineItemProps> = ({
         </div>
       </div>
     </Card>
-  )
-}
+  );
+};

@@ -1,39 +1,111 @@
 'use client'
-import { useState } from 'react'
+
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import { useFamily } from '@/context/FamilyContext'
+import { useGetMemories } from '@/hooks/useApi'
 
 export default function CalendarPage() {
-  const [date, setDate] = useState(new Date(2026, 2))
-  const days = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
-  const first = new Date(date.getFullYear(), date.getMonth(), 1).getDay()
+  const { familyId } = useFamily()
+  const [cursor, setCursor] = useState(() => new Date())
+  const { data } = useGetMemories(familyId || '', 200, 0)
+  const memoryList = data?.memories
 
-  const prev = () => setDate(new Date(date.getFullYear(), date.getMonth() - 1))
-  const next = () => setDate(new Date(date.getFullYear(), date.getMonth() + 1))
+  const year = cursor.getFullYear()
+  const month = cursor.getMonth()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  const startWeekday = new Date(year, month, 1).getDay()
+
+  const byDay = useMemo(() => {
+    const map = new Map<number, NonNullable<typeof memoryList>>()
+    for (const m of memoryList || []) {
+      const d = new Date(m.memoryDate)
+      if (d.getFullYear() === year && d.getMonth() === month) {
+        const day = d.getDate()
+        map.set(day, [...(map.get(day) || []), m])
+      }
+    }
+    return map
+  }, [memoryList, year, month])
+
+  const cells: (number | null)[] = [
+    ...Array.from({ length: startWeekday }, () => null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ]
+
+  const selectedDay = cursor.getDate()
+  const selected = byDay.get(selectedDay) || []
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <h1 className="text-4xl font-bold mb-8">📅 Calendar</h1>
-      
-      <div className="card-elevated p-8">
-        <div className="flex justify-between items-center mb-8">
-          <button onClick={prev} className="btn btn-secondary">←</button>
-          <h2 className="text-2xl font-bold">{date.toLocaleString('default', {month:'long', year:'numeric'})}</h2>
-          <button onClick={next} className="btn btn-secondary">→</button>
+    <div className="mx-auto max-w-4xl">
+      <div className="mb-8 flex items-center justify-between">
+        <h1 className="font-serif text-4xl font-bold">Calendar</h1>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            aria-label="Previous month"
+            onClick={() => setCursor(new Date(year, month - 1, 1))}
+          >
+            ←
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            aria-label="Next month"
+            onClick={() => setCursor(new Date(year, month + 1, 1))}
+          >
+            →
+          </button>
         </div>
+      </div>
 
-        <div className="grid grid-cols-7 gap-2 mb-4">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-            <div key={d} className="text-center font-bold text-gray-600 py-2">{d}</div>
-          ))}
-        </div>
+      <p className="mb-4 text-lg font-semibold">
+        {cursor.toLocaleString(undefined, { month: 'long', year: 'numeric' })}
+      </p>
 
-        <div className="grid grid-cols-7 gap-2">
-          {Array(first).fill(null).map((_, i) => <div key={`empty${i}`}></div>)}
-          {Array(days).fill(null).map((_, i) => (
-            <button key={i + 1} className="p-3 rounded-lg border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 font-medium">
-              {i + 1}
+      <div className="card-elevated mb-6 grid grid-cols-7 gap-2">
+        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+          <div key={d} className="text-center text-xs font-semibold text-stone-500">
+            {d}
+          </div>
+        ))}
+        {cells.map((day, idx) =>
+          day === null ? (
+            <div key={`e-${idx}`} />
+          ) : (
+            <button
+              key={day}
+              type="button"
+              aria-label={`${year}-${month + 1}-${day}`}
+              onClick={() => setCursor(new Date(year, month, day))}
+              className={`min-h-14 rounded-xl border p-2 text-left ${
+                day === selectedDay ? 'border-primary bg-blue-50' : 'border-stone-200'
+              }`}
+            >
+              <span className="text-sm font-semibold">{day}</span>
+              {byDay.has(day) && (
+                <span className="mt-2 block size-2 rounded-full bg-warm" aria-hidden />
+              )}
             </button>
-          ))}
-        </div>
+          ),
+        )}
+      </div>
+
+      <div className="space-y-3">
+        {selected.length === 0 ? (
+          <div className="card-elevated py-10 text-center text-stone-600">
+            No memories on this day
+          </div>
+        ) : (
+          selected.map((m) => (
+            <Link key={m.id} href={`/dashboard/memory/${m.id}`} className="card-elevated block">
+              <h3 className="font-bold">
+                {m.mood || '📖'} {m.title}
+              </h3>
+            </Link>
+          ))
+        )}
       </div>
     </div>
   )
