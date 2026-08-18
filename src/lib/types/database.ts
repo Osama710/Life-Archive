@@ -359,6 +359,18 @@ export type Database = {
         Args: { p_name: string };
         Returns: Tables<"families">;
       };
+      create_child: {
+        Args: {
+          p_family_id: string;
+          p_name: string;
+          p_birth_date?: string | null;
+          p_conception_date?: string | null;
+          p_gender?: string | null;
+          p_photo_url?: string | null;
+          p_journey_type?: string | null;
+        };
+        Returns: Tables<"children">;
+      };
       has_family_role: {
         Args: { target_family_id: string; allowed_roles: FamilyRole[] };
         Returns: boolean;

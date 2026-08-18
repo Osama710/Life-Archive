@@ -119,22 +119,52 @@ export const useCreateChild = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (child: Omit<Child, 'id' | 'createdAt' | 'updatedAt'>) => {
-      const { data, error } = await supabase
-        .from('children')
-        .insert({
-          family_id: child.familyId,
-          name: child.name,
-          birth_date: child.birthDate,
-          conception_date: child.conceptionDate,
-          gender: child.gender,
-          photo_url: child.photoUrl,
-          journey_type: child.journeyType,
-          created_by: child.createdBy,
-        })
-        .select()
-        .single()
-      if (error) throw error
-      return mapChild(data)
+      const trimmedName = child.name.trim()
+      if (!trimmedName) throw new Error('Child name is required.')
+
+      const { data, error } = await supabase.rpc('create_child', {
+        p_family_id: child.familyId,
+        p_name: trimmedName,
+        p_birth_date: child.birthDate ?? null,
+        p_conception_date: child.conceptionDate ?? null,
+        p_gender: child.gender ?? null,
+        p_photo_url: child.photoUrl ?? null,
+        p_journey_type: child.journeyType ?? 'childhood',
+      })
+
+      if (!error && data) {
+        return mapChild(data)
+      }
+
+      if (
+        error &&
+        (error.code === 'PGRST202' ||
+          error.message.includes('create_child') ||
+          error.message.includes('Could not find the function'))
+      ) {
+        const { data: inserted, error: insertError } = await supabase
+          .from('children')
+          .insert({
+            family_id: child.familyId,
+            name: trimmedName,
+            birth_date: child.birthDate,
+            conception_date: child.conceptionDate,
+            gender: child.gender,
+            photo_url: child.photoUrl,
+            journey_type: child.journeyType,
+            created_by: child.createdBy,
+          })
+          .select()
+          .single()
+
+        if (insertError) {
+          throw new Error(getErrorMessage(insertError, 'Could not create child'))
+        }
+
+        return mapChild(inserted)
+      }
+
+      throw new Error(getErrorMessage(error, 'Could not create child'))
     },
     onSuccess: (data) =>
       queryClient.invalidateQueries({ queryKey: ['children', data.familyId] }),
