@@ -1,17 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Source_Sans_3 } from "next/font/google";
+import { Outfit, Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
 import { AuthProvider } from "@/context/AuthContext";
 import { FamilyProvider } from "@/context/FamilyContext";
 import { QueryProvider } from "@/context/QueryProvider";
+import { MeshBackground } from "@/components/MeshBackground";
 import "./globals.css";
 
-const display = Fraunces({
+const display = Outfit({
   subsets: ["latin"],
   variable: "--font-display",
 });
 
-const sans = Source_Sans_3({
+const sans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
@@ -28,7 +29,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#3B6FD4",
+  themeColor: "#7C3AED",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -44,7 +45,8 @@ export default function RootLayout({
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
-      <body className="bg-stone-50 text-stone-950 antialiased">
+      <body className="min-h-dvh bg-cream font-sans text-ink antialiased">
+        <MeshBackground />
         <QueryProvider>
           <AuthProvider>
             <FamilyProvider>{children}</FamilyProvider>

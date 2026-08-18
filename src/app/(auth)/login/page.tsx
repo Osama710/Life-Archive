@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
+import { AuthShell } from "@/components/AuthShell";
 import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
@@ -30,57 +32,54 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary mb-2">Life Archive</h1>
-          <p className="text-gray-600">Preserve your family’s story</p>
-        </div>
+    <AuthShell
+      title="Welcome back"
+      subtitle="Your memories missed you. No exaggeration."
+    >
+      <form onSubmit={handleLogin} className="space-y-1">
+        <Input
+          type="email"
+          label="Email"
+          placeholder="you@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          autoComplete="email"
+        />
+        <Input
+          type="password"
+          label="Password"
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          autoComplete="current-password"
+        />
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <Input
-            type="email"
-            label="Email"
-            placeholder="your@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Input
-            type="password"
-            label="Password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-
-          {error && (
-            <p className="text-error text-sm bg-red-50 p-3 rounded">{error}</p>
-          )}
-
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Signing in..." : "Sign In"}
-          </Button>
-        </form>
-
-        <div className="mt-6 space-y-2">
-          <p className="text-center text-gray-600 text-sm">
-            Don’t have an account?{" "}
-            <a
-              href="/signup"
-              className="text-primary hover:underline font-medium"
-            >
-              Sign up
-            </a>
+        {error && (
+          <p className="alert alert-error text-sm" role="alert">
+            {error}
           </p>
-          <p className="text-center text-gray-600 text-sm">
-            <a href="/reset-password" className="text-primary hover:underline">
-              Forgot password?
-            </a>
-          </p>
-        </div>
+        )}
+
+        <Button type="submit" disabled={loading} className="mt-2 w-full">
+          {loading ? "Opening the vault…" : "Sign in"}
+        </Button>
+      </form>
+
+      <div className="mt-6 space-y-2 text-center text-sm text-ink/55">
+        <p>
+          New here?{" "}
+          <Link href="/signup" className="font-semibold text-primary hover:underline">
+            Create an account
+          </Link>
+        </p>
+        <p>
+          <Link href="/reset-password" className="text-primary hover:underline">
+            Forgot password?
+          </Link>
+        </p>
       </div>
-    </div>
+    </AuthShell>
   );
 }

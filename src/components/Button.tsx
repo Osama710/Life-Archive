@@ -18,21 +18,20 @@ export const Button: React.FC<ButtonProps> = ({
   className = "",
   ...props
 }) => {
-  const baseStyles = "font-medium rounded-lg transition cursor-pointer";
   const variants = {
-    primary: "bg-primary text-white hover:bg-primary-dark",
-    secondary: "bg-gray-200 text-gray-900 hover:bg-gray-300",
-    danger: "bg-error text-white hover:bg-red-600",
+    primary: "btn btn-primary",
+    secondary: "btn btn-secondary",
+    danger: "btn btn-danger",
   };
   const sizes = {
-    sm: "px-3 py-1 text-sm",
-    md: "px-4 py-2 text-base",
-    lg: "px-6 py-3 text-lg",
+    sm: "px-3 py-2 text-sm rounded-xl",
+    md: "",
+    lg: "px-7 py-3.5 text-base rounded-2xl",
   };
 
   return (
     <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
+      className={`${variants[variant]} ${sizes[size]} ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
       disabled={disabled}
       {...props}
     >

@@ -3,6 +3,10 @@
 import Link from 'next/link'
 import { useFamily } from '@/context/FamilyContext'
 import { useGetMemories } from '@/hooks/useApi'
+import { Loader } from '@/components/Loader'
+import { EmptyState } from '@/components/EmptyState'
+import { PageMotion, StaggerItem, StaggerList } from '@/components/PageMotion'
+import { EMPTY_TIMELINE } from '@/lib/quotes'
 
 export default function TimelinePage() {
   const { familyId, family, isLoading: familyLoading } = useFamily()
@@ -10,74 +14,92 @@ export default function TimelinePage() {
   const memories = data?.memories || []
 
   if (familyLoading || isLoading) {
-    return <div className="spinner mx-auto mt-8" aria-label="Loading timeline" />
+    return <Loader label="Loading timeline" />
   }
 
   if (!familyId) {
     return (
-      <div className="card-elevated text-center py-16">
-        <h2 className="text-2xl font-bold mb-2">Create your family archive</h2>
-        <p className="text-stone-600 mb-6">Start by naming your family and adding a child.</p>
-        <Link href="/onboarding" className="btn btn-primary">
-          Begin onboarding
-        </Link>
-      </div>
+      <PageMotion>
+        <EmptyState
+          emoji="🏡"
+          title="Your archive needs a home base"
+          subtitle="Set up your family space first — name it, add your people, then the timeline gets spicy."
+          cta="Start onboarding"
+          href="/onboarding"
+        />
+      </PageMotion>
     )
   }
 
   if (isError) {
-    return <p className="text-red-600">Could not load memories. Please try again.</p>
+    return (
+      <p className="alert alert-error" role="alert">
+        Could not load memories. The vibes are off — try again?
+      </p>
+    )
   }
 
   return (
-    <div>
-      <div className="mb-10 animate-slide-up">
-        <p className="text-sm font-semibold uppercase tracking-wider text-primary">
+    <PageMotion>
+      <div className="mb-10">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary/80">
           {family?.name}
         </p>
-        <h1 className="font-serif text-4xl font-bold mb-2">Timeline</h1>
-        <p className="text-lg text-stone-600">Your family’s precious moments</p>
+        <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
+          Timeline
+        </h1>
+        <p className="mt-2 text-lg text-ink/60">
+          Every moment, chronologically unbothered.
+        </p>
       </div>
 
       <div className="mb-8">
         <Link href="/dashboard/memory/create" className="btn btn-primary">
-          Create Memory
+          + New memory
         </Link>
       </div>
 
       {memories.length === 0 ? (
-        <div className="card-elevated text-center py-20">
-          <h3 className="text-2xl font-bold mb-2">No memories yet</h3>
-          <p className="text-stone-600 mb-6">Create your first precious moment</p>
-          <Link href="/dashboard/memory/create" className="btn btn-primary">
-            Start Now
-          </Link>
-        </div>
+        <EmptyState
+          emoji={EMPTY_TIMELINE.emoji}
+          title={EMPTY_TIMELINE.title}
+          subtitle={EMPTY_TIMELINE.subtitle}
+          cta={EMPTY_TIMELINE.cta}
+          href="/dashboard/memory/create"
+        />
       ) : (
-        <div className="space-y-4">
-          {memories.map((m, i) => (
-            <Link key={m.id} href={`/dashboard/memory/${m.id}`}>
-              <article
-                className="card-elevated group cursor-pointer"
-                style={{ animationDelay: `${i * 30}ms` }}
-              >
-                <div className="flex items-start gap-4">
-                  <span className="text-3xl" aria-hidden>
-                    {m.mood || '📖'}
-                  </span>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold group-hover:text-primary">{m.title}</h3>
-                    <p className="text-sm text-stone-600">
-                      {new Date(m.memoryDate).toLocaleDateString()}
-                    </p>
-                    {m.location && <p className="text-xs text-stone-500">{m.location}</p>}
+        <StaggerList className="space-y-4">
+          {memories.map((m) => (
+            <StaggerItem key={m.id}>
+              <Link href={`/dashboard/memory/${m.id}`}>
+                <article className="card-elevated group cursor-pointer">
+                  <div className="flex items-start gap-4">
+                    <span className="text-3xl transition group-hover:scale-110" aria-hidden="true">
+                      {m.mood || '📖'}
+                    </span>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold transition group-hover:text-primary">
+                        {m.title}
+                      </h3>
+                      <p className="text-sm text-ink/55">
+                        {new Date(m.memoryDate).toLocaleDateString(undefined, {
+                          weekday: 'short',
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })}
+                      </p>
+                      {m.location && (
+                        <p className="mt-1 text-xs text-ink/40">📍 {m.location}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </article>
-            </Link>
+                </article>
+              </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       )}
-    </div>
+    </PageMotion>
   )
 }

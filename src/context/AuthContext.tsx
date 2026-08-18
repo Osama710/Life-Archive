@@ -9,7 +9,11 @@ const supabase = createClient();
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<void>;
+  signUp: (
+    displayName: string,
+    email: string,
+    password: string,
+  ) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -43,12 +47,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription?.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (
+    displayName: string,
+    email: string,
+    password: string,
+  ) => {
+    const trimmedName = displayName.trim();
     const emailRedirectTo = `${window.location.origin}/auth/callback?next=/onboarding`;
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo },
+      options: {
+        emailRedirectTo,
+        data: { display_name: trimmedName },
+      },
     });
     if (error) throw error;
   };
