@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { mapChild, mapCollection, mapFamily, mapMemory } from '@/lib/data/mappers'
+import { getErrorMessage } from '@/lib/errors'
 import type { Child, Memory } from '@/lib/types/db'
 import type { TablesUpdate } from '@/lib/types/database'
 
@@ -58,17 +59,41 @@ export const useCreateFamily = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (name: string) => {
+      const trimmed = name.trim()
+      if (!trimmed) throw new Error('Family name is required.')
+
       const {
         data: { user },
       } = await supabase.auth.getUser()
       if (!user) throw new Error('You must be signed in to create a family.')
-      const { data, error } = await supabase
-        .from('families')
-        .insert({ name, created_by: user.id })
-        .select()
-        .single()
-      if (error) throw error
-      return mapFamily(data)
+
+      const { data, error } = await supabase.rpc('create_family', { p_name: trimmed })
+
+      if (!error && data) {
+        return mapFamily(data)
+      }
+
+      // Legacy DBs before the create_family migration
+      if (
+        error &&
+        (error.code === 'PGRST202' ||
+          error.message.includes('create_family') ||
+          error.message.includes('Could not find the function'))
+      ) {
+        const { data: inserted, error: insertError } = await supabase
+          .from('families')
+          .insert({ name: trimmed, created_by: user.id })
+          .select()
+          .single()
+
+        if (insertError) {
+          throw new Error(getErrorMessage(insertError, 'Could not create family'))
+        }
+
+        return mapFamily(inserted)
+      }
+
+      throw new Error(getErrorMessage(error, 'Could not create family'))
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['families'] }),
   })

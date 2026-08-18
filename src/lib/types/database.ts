@@ -355,6 +355,10 @@ export type Database = {
         Args: { p_token: string };
         Returns: string;
       };
+      create_family: {
+        Args: { p_name: string };
+        Returns: Tables<"families">;
+      };
       has_family_role: {
         Args: { target_family_id: string; allowed_roles: FamilyRole[] };
         Returns: boolean;

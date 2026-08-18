@@ -8,6 +8,7 @@ import { Input } from '@/components/Input'
 import { AuthShell } from '@/components/AuthShell'
 import { useAuth } from '@/context/AuthContext'
 import { useCreateChild, useCreateFamily } from '@/hooks/useApi'
+import { getErrorMessage } from '@/lib/errors'
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -30,7 +31,7 @@ export default function OnboardingPage() {
       localStorage.setItem('life-archive.familyId', family.id)
       setStep(1)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create family')
+      setError(getErrorMessage(err, 'Could not create family'))
     }
   }
 
@@ -51,7 +52,7 @@ export default function OnboardingPage() {
       router.replace('/dashboard/timeline')
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create child')
+      setError(getErrorMessage(err, 'Could not create child'))
     }
   }
 
