@@ -29,11 +29,11 @@ export function EmptyState({
       className="glass-card relative overflow-hidden px-6 py-14 text-center sm:px-10"
     >
       <div
-        className="pointer-events-none absolute -right-8 -top-8 size-32 rounded-full bg-violet-400/20 blur-2xl"
+        className="pointer-events-none absolute -right-8 -top-8 size-32 rounded-full bg-violet-400/10 blur-2xl"
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute -bottom-10 -left-6 size-28 rounded-full bg-accent/15 blur-2xl"
+        className="pointer-events-none absolute -bottom-10 -left-6 size-28 rounded-full bg-accent/8 blur-2xl"
         aria-hidden="true"
       />
       <motion.span

@@ -10,14 +10,14 @@ interface DashboardMobileHeaderProps {
 
 export function DashboardMobileHeader({ displayName }: DashboardMobileHeaderProps) {
   return (
-    <header className="glass-nav sticky top-0 z-20 border-b">
-      <div className="flex items-center justify-between gap-3 px-4 py-3 pt-[max(0.75rem,var(--safe-top))]">
+    <header className="glass-chrome sticky top-0 z-20 border-b">
+      <div className="flex items-center justify-between gap-3 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <AppBrandRow href="/dashboard" size={32} />
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
           <Link
             href="/dashboard/search"
             aria-label="Search memories"
-            className="flex size-10 items-center justify-center rounded-xl text-ink/55 transition hover:bg-white/80 hover:text-primary"
+            className="flex size-10 items-center justify-center rounded-xl border border-ink/5 bg-white/50 text-ink/55 transition hover:border-primary/15 hover:text-primary"
           >
             <Search size={20} />
           </Link>

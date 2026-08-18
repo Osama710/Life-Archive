@@ -17,10 +17,13 @@ function FeatureCard({ feature, compact = false }: { feature: AppFeature; compac
   return (
     <Link
       href={feature.href}
-      className={`glass-card block transition active:scale-[0.98] ${
+      className={`glass-card genz-cut-corner block transition active:scale-[0.98] ${
         compact ? 'p-4 text-center' : 'flex items-start gap-4 p-4'
       }`}
     >
+      <span className="genz-sticker" aria-hidden="true">
+        {feature.emoji}
+      </span>
       {compact ? (
         <>
           <span className="mb-2 block text-2xl" aria-hidden="true">
@@ -90,7 +93,7 @@ export function AppFeatureGrid({ compact = false }: { compact?: boolean }) {
 
 export function AppComingSoonNote() {
   return (
-    <section className="rounded-2xl border border-dashed border-ink/15 bg-white/40 p-4">
+    <section className="glass-card genz-cut-corner border border-dashed border-ink/10 bg-white/50 p-4">
       <h3 className="font-display text-sm font-bold text-ink/70">Not in the app yet</h3>
       <ul className="mt-2 space-y-1 text-sm text-ink/50">
         <li>· Push notifications</li>
