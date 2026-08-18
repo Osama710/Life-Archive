@@ -8,7 +8,9 @@ import { useFamily } from '@/context/FamilyContext'
 import { useDisplayName } from '@/hooks/useDisplayName'
 import { useGetDeletedMemories, useRestoreMemory } from '@/hooks/useApi'
 import { PageHeader } from '@/components/PageHeader'
+import { AppBrandRow } from '@/components/AppBrandRow'
 import { PageMotion } from '@/components/PageMotion'
+import { BRAND } from '@/lib/brand'
 import { EMPTY_TRASH } from '@/lib/quotes'
 
 export default function SettingsPage() {
@@ -21,7 +23,11 @@ export default function SettingsPage() {
 
   return (
     <PageMotion className="mx-auto max-w-2xl space-y-6">
-      <PageHeader title="Settings" subtitle="Your account, your rules." />
+      <PageHeader
+        showBrand
+        title="Settings"
+        subtitle="Your account, your rules."
+      />
 
       <section className="glass-card overflow-hidden p-0">
         <Link
@@ -94,6 +100,14 @@ export default function SettingsPage() {
         <h2 className="font-display text-xl font-bold">Privacy</h2>
         <p className="text-sm text-ink/55">
           Memories are private by default. No ads. No creepy tracking. Just your story.
+        </p>
+      </section>
+
+      <section className="glass-card p-6">
+        <AppBrandRow size={48} showTagline />
+        <p className="mt-4 text-sm leading-relaxed text-ink/55">
+          {BRAND.name} helps families save photos, stories, and little moments that
+          would otherwise live only in camera rolls and group chats.
         </p>
       </section>
 

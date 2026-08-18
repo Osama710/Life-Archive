@@ -16,6 +16,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useDisplayName } from "@/hooks/useDisplayName";
 import { DashboardPageTransition } from "@/components/DashboardPageTransition";
+import { DashboardMobileHeader } from "@/components/DashboardMobileHeader";
 import { BrandLogo } from "@/components/BrandLogo";
 import { BRAND } from "@/lib/brand";
 
@@ -108,6 +109,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       <main id="main-content" className="pb-24 lg:ml-72 lg:pb-0">
+        <DashboardMobileHeader />
         <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
           <DashboardPageTransition>{children}</DashboardPageTransition>
         </div>

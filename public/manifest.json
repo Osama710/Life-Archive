@@ -1,7 +1,7 @@
 {
   "id": "/",
   "name": "Life Archive",
-  "short_name": "Archive",
+  "short_name": "Life Archive",
   "description": "Preserve your family's story",
   "start_url": "/dashboard",
   "scope": "/",

@@ -19,6 +19,7 @@ export default function DashboardHomePage() {
   return (
     <PageMotion className="space-y-10">
       <PageHeader
+        showBrand
         eyebrow={family?.name || 'Your archive'}
         title={`Hey ${firstName} 👋`}
         subtitle="This is where the random Tuesday wins and chaotic holiday pics live forever. No judgment. Just vibes."

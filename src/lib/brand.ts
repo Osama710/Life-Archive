@@ -1,6 +1,6 @@
 export const BRAND = {
   name: "Life Archive",
-  shortName: "Archive",
+  shortName: "Life Archive",
   tagline: "Your family story, kept close",
   colors: {
     primary: "#7C3AED",

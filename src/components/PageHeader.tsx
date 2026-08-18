@@ -1,15 +1,24 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { AppBrandRow } from "@/components/AppBrandRow";
 
 interface PageHeaderProps {
   eyebrow?: string;
   title: string;
   subtitle?: string;
   action?: React.ReactNode;
+  /** Show app icon + name above the page title (desktop home/settings hero) */
+  showBrand?: boolean;
 }
 
-export function PageHeader({ eyebrow, title, subtitle, action }: PageHeaderProps) {
+export function PageHeader({
+  eyebrow,
+  title,
+  subtitle,
+  action,
+  showBrand = false,
+}: PageHeaderProps) {
   return (
     <motion.header
       initial={{ opacity: 0, y: 16 }}
@@ -18,6 +27,11 @@ export function PageHeader({ eyebrow, title, subtitle, action }: PageHeaderProps
       className="mb-8 flex flex-wrap items-end justify-between gap-4"
     >
       <div>
+        {showBrand && (
+          <div className="mb-4 hidden lg:block">
+            <AppBrandRow size={44} showTagline />
+          </div>
+        )}
         {eyebrow && (
           <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-primary/80">
             {eyebrow}

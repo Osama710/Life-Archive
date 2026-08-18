@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: BRAND.shortName,
+    title: BRAND.name,
   },
 };
 
@@ -63,7 +63,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="theme-color" content="#FDF8F3" />
-        <meta name="apple-mobile-web-app-title" content="Life Archive" />
+        <meta name="apple-mobile-web-app-title" content={BRAND.name} />
       </head>
       <body className="min-h-dvh bg-cream font-sans text-ink antialiased">
         <MeshBackground />
