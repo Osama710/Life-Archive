@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useFamily } from '@/context/FamilyContext'
 import { useGetMemories } from '@/hooks/useApi'
 import { useDisplayName } from '@/hooks/useDisplayName'
+import { AppComingSoonNote, AppFeatureGrid } from '@/components/AppFeatureGrid'
 import { EmptyState } from '@/components/EmptyState'
 import { PageHeader } from '@/components/PageHeader'
 import { PageMotion, StaggerItem, StaggerList } from '@/components/PageMotion'
@@ -22,40 +23,46 @@ export default function DashboardHomePage() {
         <PageHeader
           showBrand
           title={`Hey ${firstName} 👋`}
-          subtitle="Name your family archive and add your first child to get started."
+          subtitle="Set up your family archive, then everything below unlocks."
         />
         <EmptyState
           emoji="🏡"
           title="Create your family archive"
-          subtitle="You don't have a family space yet. Set one up in under a minute."
-          cta="Set up family"
+          subtitle="Name your family, add your child, then invite your partner from Family."
+          cta="Get started"
           href="/onboarding"
         />
+        <section>
+          <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-ink/45">
+            What you will get
+          </h2>
+          <AppFeatureGrid compact />
+        </section>
       </PageMotion>
     )
   }
 
   return (
-    <PageMotion className="space-y-10">
+    <PageMotion className="space-y-8">
       <PageHeader
-        showBrand
         eyebrow={family?.name || 'Your archive'}
         title={`Hey ${firstName} 👋`}
-        subtitle="This is where the random Tuesday wins and chaotic holiday pics live forever. No judgment. Just vibes."
+        subtitle="Tap anything below — this is your app menu."
       />
 
-      <div className="flex flex-wrap gap-3">
-        <Link href="/dashboard/memory/create" className="btn btn-primary">
-          + Add memory
-        </Link>
-        <Link href="/dashboard/timeline" className="btn btn-secondary">
-          Open timeline
-        </Link>
-      </div>
+      <section>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2 className="font-display text-lg font-bold text-ink">Everything in the app</h2>
+          <Link href="/dashboard/more" className="text-sm font-semibold text-primary">
+            See all
+          </Link>
+        </div>
+        <AppFeatureGrid compact />
+      </section>
 
       {children.length > 0 && (
-        <section className="glass-card p-6">
-          <h2 className="mb-4 font-display text-xl font-bold">Your crew</h2>
+        <section className="glass-card p-5">
+          <h2 className="mb-3 font-display text-lg font-bold">Your child</h2>
           <div className="flex flex-wrap gap-2">
             {children.map((c) => (
               <button
@@ -64,8 +71,8 @@ export default function DashboardHomePage() {
                 onClick={() => setChildId(c.id)}
                 className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
                   child?.id === c.id
-                    ? 'border-primary/30 bg-gradient-to-r from-violet-500/10 to-fuchsia-500/10 text-primary shadow-soft'
-                    : 'border-ink/10 bg-white/80 text-ink/70 hover:border-primary/20'
+                    ? 'border-primary/30 bg-linear-to-r from-violet-500/15 to-fuchsia-500/10 text-primary shadow-soft'
+                    : 'border-ink/10 bg-white/80 text-ink/70'
                 }`}
               >
                 {c.name}
@@ -76,14 +83,11 @@ export default function DashboardHomePage() {
       )}
 
       <section>
-        <div className="mb-5 flex items-end justify-between gap-4">
-          <h2 className="font-display text-2xl font-bold">Recent drops</h2>
+        <div className="mb-4 flex items-end justify-between gap-4">
+          <h2 className="font-display text-lg font-bold">Recent memories</h2>
           {recent.length > 0 && (
-            <Link
-              href="/dashboard/timeline"
-              className="text-sm font-semibold text-primary hover:underline"
-            >
-              See all
+            <Link href="/dashboard/timeline" className="text-sm font-semibold text-primary">
+              Timeline
             </Link>
           )}
         </div>
@@ -122,6 +126,8 @@ export default function DashboardHomePage() {
           </StaggerList>
         )}
       </section>
+
+      <AppComingSoonNote />
     </PageMotion>
   )
 }

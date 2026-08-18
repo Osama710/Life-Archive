@@ -52,6 +52,27 @@
       "description": "View timeline",
       "url": "/dashboard/timeline",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Calendar",
+      "short_name": "Calendar",
+      "description": "Browse memories by date",
+      "url": "/dashboard/calendar",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Family",
+      "short_name": "Family",
+      "description": "Invite partner and manage family",
+      "url": "/dashboard/family",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Explore",
+      "short_name": "Explore",
+      "description": "All app features",
+      "url": "/dashboard/more",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

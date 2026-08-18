@@ -53,7 +53,19 @@ export default function SettingsPage() {
       <section className="glass-card space-y-3 p-6">
         <h2 className="font-display text-xl font-bold">Family</h2>
         {hasFamily ? (
-          <p className="text-ink/60">{family?.name}</p>
+          <>
+            <p className="text-ink/60">{family?.name}</p>
+            <p className="text-sm text-ink/50">
+              Invite your partner so you can both add memories from your phones.
+            </p>
+            <Link
+              href="/dashboard/family"
+              className="btn btn-secondary inline-flex items-center gap-1"
+            >
+              Manage family & invites
+              <ChevronRight size={18} aria-hidden="true" />
+            </Link>
+          </>
         ) : (
           <>
             <p className="text-ink/60">No family archive yet.</p>

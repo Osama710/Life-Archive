@@ -20,6 +20,7 @@ const nextConfig = {
       "settings",
       "letters",
       "on-this-day",
+      "more",
     ];
 
     return [

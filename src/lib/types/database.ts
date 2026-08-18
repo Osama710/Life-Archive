@@ -355,6 +355,35 @@ export type Database = {
         Args: { p_token: string };
         Returns: string;
       };
+      create_family_invitation: {
+        Args: {
+          p_family_id: string;
+          p_email: string;
+          p_role?: FamilyRole;
+        };
+        Returns: string;
+      };
+      get_family_members: {
+        Args: { p_family_id: string };
+        Returns: {
+          id: string;
+          user_id: string;
+          role: FamilyRole;
+          status: MemberStatus;
+          joined_at: string | null;
+          display_name: string | null;
+        }[];
+      };
+      get_family_invitations: {
+        Args: { p_family_id: string };
+        Returns: {
+          id: string;
+          email: string;
+          role: FamilyRole;
+          expires_at: string;
+          created_at: string;
+        }[];
+      };
       create_family: {
         Args: { p_name: string };
         Returns: Tables<"families">;
@@ -428,6 +457,22 @@ export type Database = {
       get_memory_media: {
         Args: { p_memory_id: string };
         Returns: Tables<"memory_media">[];
+      };
+      get_collection_memories: {
+        Args: { p_collection_id: string };
+        Returns: Tables<"memories">[];
+      };
+      get_memory_collection_ids: {
+        Args: { p_memory_id: string };
+        Returns: string[];
+      };
+      add_memory_to_collection: {
+        Args: { p_collection_id: string; p_memory_id: string };
+        Returns: undefined;
+      };
+      remove_memory_from_collection: {
+        Args: { p_collection_id: string; p_memory_id: string };
+        Returns: undefined;
       };
       has_family_role: {
         Args: { target_family_id: string; allowed_roles: FamilyRole[] };

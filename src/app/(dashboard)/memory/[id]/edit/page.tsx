@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/context/AuthContext'
+import { useFamily } from '@/context/FamilyContext'
 import { useGetMemory, useUpdateMemory } from '@/hooks/useApi'
 import { BackLink } from '@/components/BackLink'
 import { PageHeader } from '@/components/PageHeader'
@@ -14,6 +15,7 @@ import { Input } from '@/components/Input'
 import { TextareaField } from '@/components/TextareaField'
 import { Button } from '@/components/Button'
 import { MemoryMediaGallery } from '@/components/MemoryMediaGallery'
+import { MemoryCollectionPicker } from '@/components/MemoryCollectionPicker'
 import { getErrorMessage } from '@/lib/errors'
 import { uploadMemoryMediaBatch } from '@/lib/uploads/memoryMedia'
 
@@ -24,6 +26,7 @@ export default function MemoryEditPage() {
   const router = useRouter()
   const queryClient = useQueryClient()
   const { user } = useAuth()
+  const { familyId } = useFamily()
   const { data: memory, isLoading, isError } = useGetMemory(params.id)
   const update = useUpdateMemory()
   const [title, setTitle] = useState('')
@@ -102,7 +105,7 @@ export default function MemoryEditPage() {
       <PageHeader title="Edit memory" subtitle="Tweak the details — the story stays yours." />
 
       {memory.media && memory.media.length > 0 && (
-        <MemoryMediaGallery media={memory.media} title={memory.title} />
+        <MemoryMediaGallery media={memory.media} title={memory.title} variant="compact" />
       )}
 
       <div className="glass-card space-y-2 p-6">
@@ -175,6 +178,11 @@ export default function MemoryEditPage() {
             </div>
           )}
         </div>
+        {familyId && (
+          <div className="mb-4 border-t border-ink/8 pt-4">
+            <MemoryCollectionPicker memoryId={memory.id} familyId={familyId} />
+          </div>
+        )}
         {error && (
           <p className="alert alert-error text-sm" role="alert">
             {error}

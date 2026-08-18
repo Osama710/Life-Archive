@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
@@ -50,7 +51,7 @@ export default function CollectionsPage() {
     <PageMotion>
       <PageHeader
         title="Collections"
-        subtitle="Curate memories into albums that actually mean something."
+        subtitle="Themed albums — open one to add memories from your timeline."
         action={
           <Button type="button" onClick={() => setShow(true)}>
             + New
@@ -98,15 +99,15 @@ export default function CollectionsPage() {
           onAction={() => setShow(true)}
         />
       ) : (
-        <StaggerList className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <StaggerList className="space-y-3">
           {cols.map((c) => (
             <StaggerItem key={c.id}>
-              <div className="glass-card h-full p-6 transition hover:shadow-lift">
+              <Link href={`/dashboard/collections/${c.id}`} className="glass-card block p-6 transition hover:shadow-lift">
                 <h3 className="font-display text-lg font-bold text-ink">{c.name}</h3>
                 <p className="mt-2 text-sm text-ink/55">
-                  {c.description || 'No description yet — still iconic.'}
+                  {c.description || 'Tap to view and add memories'}
                 </p>
-              </div>
+              </Link>
             </StaggerItem>
           ))}
         </StaggerList>

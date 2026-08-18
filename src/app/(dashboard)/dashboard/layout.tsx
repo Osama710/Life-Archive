@@ -1,149 +1,91 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   BookOpen,
-  CalendarDays,
+  Compass,
   Home,
-  Library,
-  LogOut,
   Plus,
-  Search,
   Settings,
-  Users,
 } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
 import { useFamily } from "@/context/FamilyContext";
 import { useDisplayName } from "@/hooks/useDisplayName";
 import { DashboardPageTransition } from "@/components/DashboardPageTransition";
 import { DashboardMobileHeader } from "@/components/DashboardMobileHeader";
-import { BrandLogo } from "@/components/BrandLogo";
-import { BRAND } from "@/lib/brand";
 
-const navigation = [
-  { label: "Home", href: "/dashboard", icon: Home },
-  { label: "Timeline", href: "/dashboard/timeline", icon: BookOpen },
-  { label: "Calendar", href: "/dashboard/calendar", icon: CalendarDays },
-  { label: "Collections", href: "/dashboard/collections", icon: Library },
-  { label: "Search", href: "/dashboard/search", icon: Search },
-  { label: "Family", href: "/dashboard/family", icon: Users },
-  { label: "On This Day", href: "/dashboard/on-this-day", icon: CalendarDays },
-  { label: "Letters", href: "/dashboard/letters", icon: BookOpen },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+const explorePaths = [
+  "/dashboard/more",
+  "/dashboard/calendar",
+  "/dashboard/search",
+  "/dashboard/family",
+  "/dashboard/growth",
+  "/dashboard/on-this-day",
+  "/dashboard/letters",
+  "/dashboard/collections",
 ];
 
 const mobileNavigation = [
-  { ...navigation[0], className: "col-start-1" },
-  { ...navigation[1], className: "col-start-2" },
-  { ...navigation[3], className: "col-start-4" },
-  { ...navigation[8], className: "col-start-5" },
+  { label: "Home", href: "/dashboard", icon: Home, className: "col-start-1" },
+  { label: "Timeline", href: "/dashboard/timeline", icon: BookOpen, className: "col-start-2" },
+  { label: "Explore", href: "/dashboard/more", icon: Compass, className: "col-start-4" },
+  { label: "You", href: "/dashboard/settings", icon: Settings, className: "col-start-5" },
 ];
+
+function isActive(pathname: string, href: string) {
+  if (href === "/dashboard") return pathname === href;
+  if (href === "/dashboard/more") {
+    return (
+      explorePaths.some((path) => pathname.startsWith(path)) ||
+      /^\/dashboard\/collections\/[^/]+/.test(pathname)
+    );
+  }
+  if (href === "/dashboard/settings") {
+    return pathname.startsWith("/dashboard/settings");
+  }
+  return pathname.startsWith(href);
+}
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { signOut } = useAuth();
   const { family, isLoading: familyLoading } = useFamily();
-  const { displayName, initials } = useDisplayName();
+  const { displayName } = useDisplayName();
   const needsSetup = !familyLoading && !family;
   const fabHref = needsSetup ? "/onboarding" : "/dashboard/memory/create";
   const fabLabel = needsSetup ? "Set up family archive" : "Add memory";
 
-  const handleSignOut = async () => {
-    await signOut();
-    router.replace("/login");
-    router.refresh();
-  };
-
   return (
-    <div className="relative min-h-dvh text-ink">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-white/60 bg-white/70 px-5 py-6 backdrop-blur-xl lg:flex">
-        <Link href="/dashboard" className="mb-8 block px-3">
-          <BrandLogo variant="primary" height={34} />
-          <span className="mt-2 block text-xs font-medium tracking-wide text-ink/45">
-            {BRAND.tagline}
-          </span>
-        </Link>
-
-        <nav aria-label="Main navigation" className="flex-1 space-y-1">
-          {navigation.map(({ label, href, icon: Icon }) => {
-            const active =
-              href === "/dashboard"
-                ? pathname === href
-                : pathname.startsWith(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                aria-current={active ? "page" : undefined}
-                className={`flex min-h-11 items-center gap-3 rounded-2xl px-3 text-sm font-semibold transition-all duration-200 ${
-                  active
-                    ? "nav-active"
-                    : "text-ink/55 hover:bg-white/80 hover:text-ink"
-                }`}
-              >
-                <Icon aria-hidden="true" size={19} />
-                {label}
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="mt-4 space-y-2 border-t border-ink/5 pt-4">
-          <div className="flex items-center gap-3 px-3 py-2">
-            <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-brand text-sm font-bold text-white shadow-soft">
-              {initials}
-            </span>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-ink">
-                {displayName}
-              </p>
-              <p className="text-xs text-ink/45">Family archivist</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="flex min-h-11 w-full items-center gap-3 rounded-2xl px-3 text-sm font-semibold text-ink/55 transition hover:bg-red-50 hover:text-red-600"
-          >
-            <LogOut aria-hidden="true" size={19} />
-            Sign out
-          </button>
-        </div>
-      </aside>
-
-      <main id="main-content" className="pb-24 lg:ml-72 lg:pb-0">
-        <DashboardMobileHeader />
-        <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
+    <div className="relative mx-auto min-h-dvh max-w-lg text-ink">
+      <main id="main-content" className="pb-24">
+        <DashboardMobileHeader displayName={displayName} />
+        <div className="px-4 py-5">
           <DashboardPageTransition>{children}</DashboardPageTransition>
         </div>
       </main>
 
       <nav
-        aria-label="Mobile navigation"
-        className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-white/70 bg-white/85 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl lg:hidden"
+        aria-label="App navigation"
+        className="fixed inset-x-0 bottom-0 z-40 mx-auto grid max-w-lg grid-cols-5 border-t border-white/70 bg-white/90 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl"
       >
         {mobileNavigation.map(({ label, href, icon: Icon, className }) => {
-          const active =
-            href === "/dashboard"
-              ? pathname === href
-              : pathname.startsWith(href);
+          const active = isActive(pathname, href);
+
           return (
             <div key={href} className={`${className} row-start-1`}>
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`flex min-h-12 flex-col items-center justify-center gap-1 text-[11px] font-semibold transition ${
+                className={`flex min-h-12 flex-col items-center justify-center gap-0.5 text-[10px] font-semibold transition ${
                   active ? "text-primary" : "text-ink/45"
                 }`}
               >
-                <Icon aria-hidden="true" size={20} />
+                <Icon aria-hidden="true" size={21} strokeWidth={active ? 2.5 : 2} />
                 {label}
               </Link>
             </div>
           );
         })}
+
         <Link
           href={fabHref}
           aria-label={fabLabel}

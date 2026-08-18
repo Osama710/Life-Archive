@@ -116,6 +116,172 @@ export const useCreateFamily = () => {
   })
 }
 
+export interface FamilyMemberRow {
+  id: string
+  userId: string
+  role: 'owner' | 'editor' | 'viewer'
+  status: 'pending' | 'active' | 'removed'
+  joinedAt: string | null
+  displayName: string
+}
+
+export interface FamilyInvitationRow {
+  id: string
+  email: string
+  role: 'owner' | 'editor' | 'viewer'
+  expiresAt: string
+  createdAt: string
+}
+
+export const useGetFamilyMembers = (familyId: string, enabled = true) =>
+  useQuery({
+    queryKey: ['family-members', familyId],
+    enabled: enabled && !!familyId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_family_members', {
+        p_family_id: familyId,
+      })
+
+      if (error) {
+        if (
+          error.code === 'PGRST202' ||
+          error.message.includes('get_family_members') ||
+          error.message.includes('Could not find the function')
+        ) {
+          return [] as FamilyMemberRow[]
+        }
+        throw error
+      }
+
+      return (data ?? []).map(
+        (row): FamilyMemberRow => ({
+          id: row.id,
+          userId: row.user_id,
+          role: row.role,
+          status: row.status,
+          joinedAt: row.joined_at,
+          displayName: row.display_name || 'Family member',
+        }),
+      )
+    },
+  })
+
+export const useGetFamilyInvitations = (familyId: string, enabled = true) =>
+  useQuery({
+    queryKey: ['family-invitations', familyId],
+    enabled: enabled && !!familyId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_family_invitations', {
+        p_family_id: familyId,
+      })
+
+      if (error) {
+        if (
+          error.code === 'PGRST202' ||
+          error.message.includes('get_family_invitations') ||
+          error.message.includes('Could not find the function')
+        ) {
+          return [] as FamilyInvitationRow[]
+        }
+        throw error
+      }
+
+      return (data ?? []).map(
+        (row): FamilyInvitationRow => ({
+          id: row.id,
+          email: row.email,
+          role: row.role,
+          expiresAt: row.expires_at,
+          createdAt: row.created_at,
+        }),
+      )
+    },
+  })
+
+export const useInviteFamilyMember = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      familyId,
+      email,
+      role,
+    }: {
+      familyId: string
+      email: string
+      role: 'owner' | 'editor' | 'viewer'
+    }) => {
+      const { data: token, error } = await supabase.rpc('create_family_invitation', {
+        p_family_id: familyId,
+        p_email: email.trim().toLowerCase(),
+        p_role: role,
+      })
+
+      if (error) {
+        if (
+          error.code !== 'PGRST202' &&
+          !error.message.includes('create_family_invitation') &&
+          !error.message.includes('Could not find the function')
+        ) {
+          throw new Error(getErrorMessage(error, 'Could not create invitation'))
+        }
+
+        const rawToken = crypto.randomUUID()
+        const tokenHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rawToken))
+        const hash = Array.from(new Uint8Array(tokenHash))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('')
+        const expires = new Date()
+        expires.setDate(expires.getDate() + 7)
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (!user) throw new Error('You must be signed in to invite someone.')
+
+        const { error: insertError } = await supabase.from('family_invitations').insert({
+          family_id: familyId,
+          email: email.trim().toLowerCase(),
+          role,
+          token_hash: hash,
+          invited_by: user.id,
+          expires_at: expires.toISOString(),
+        })
+
+        if (insertError) {
+          throw new Error(getErrorMessage(insertError, 'Could not create invitation'))
+        }
+
+        return rawToken
+      }
+
+      if (!token) throw new Error('Could not create invitation')
+      return token
+    },
+    onSuccess: (_token, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['family-invitations', variables.familyId] })
+    },
+  })
+}
+
+export const useAcceptFamilyInvitation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (token: string) => {
+      const { data, error } = await supabase.rpc('accept_family_invitation', {
+        p_token: token,
+      })
+      if (error) throw new Error(getErrorMessage(error, 'Could not accept invitation'))
+      return data as string
+    },
+    onSuccess: (familyId) => {
+      queryClient.invalidateQueries({ queryKey: ['families'] })
+      queryClient.invalidateQueries({ queryKey: ['family-members', familyId] })
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('life-archive.familyId', familyId)
+      }
+    },
+  })
+}
+
 export const useGetChildren = (familyId: string) =>
   useQuery({
     queryKey: ['children', familyId],
@@ -513,30 +679,189 @@ export const useAddMemoryToCollection = () => {
       collectionId: string
       memoryId: string
     }) => {
-      const { error } = await supabase
-        .from('memory_collections')
-        .insert({ collection_id: collectionId, memory_id: memoryId })
-      if (error) throw error
+      const { error } = await supabase.rpc('add_memory_to_collection', {
+        p_collection_id: collectionId,
+        p_memory_id: memoryId,
+      })
+
+      if (!error) return
+
+      const rpcMissing =
+        error.code === 'PGRST202' ||
+        error.message.includes('add_memory_to_collection') ||
+        error.message.includes('Could not find the function')
+
+      if (rpcMissing) {
+        const { error: insertError } = await supabase
+          .from('memory_collections')
+          .insert({ collection_id: collectionId, memory_id: memoryId })
+
+        if (insertError) throw insertError
+        return
+      }
+
+      throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['collections'] }),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['collections'] })
+      queryClient.invalidateQueries({ queryKey: ['collection-memories', variables.collectionId] })
+      queryClient.invalidateQueries({ queryKey: ['memory-collections', variables.memoryId] })
+    },
   })
 }
+
+export const useRemoveMemoryFromCollection = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      collectionId,
+      memoryId,
+    }: {
+      collectionId: string
+      memoryId: string
+    }) => {
+      const { error } = await supabase.rpc('remove_memory_from_collection', {
+        p_collection_id: collectionId,
+        p_memory_id: memoryId,
+      })
+
+      if (!error) return
+
+      const rpcMissing =
+        error.code === 'PGRST202' ||
+        error.message.includes('remove_memory_from_collection') ||
+        error.message.includes('Could not find the function')
+
+      if (rpcMissing) {
+        const { error: deleteError } = await supabase
+          .from('memory_collections')
+          .delete()
+          .eq('collection_id', collectionId)
+          .eq('memory_id', memoryId)
+
+        if (deleteError) throw deleteError
+        return
+      }
+
+      throw error
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['collections'] })
+      queryClient.invalidateQueries({ queryKey: ['collection-memories', variables.collectionId] })
+      queryClient.invalidateQueries({ queryKey: ['memory-collections', variables.memoryId] })
+    },
+  })
+}
+
+export const useGetCollectionMemories = (collectionId: string) =>
+  useQuery({
+    queryKey: ['collection-memories', collectionId],
+    enabled: !!collectionId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_collection_memories', {
+        p_collection_id: collectionId,
+      })
+
+      if (!error && data) {
+        return data.map(mapMemory)
+      }
+
+      if (
+        error &&
+        error.code !== 'PGRST202' &&
+        !error.message.includes('get_collection_memories')
+      ) {
+        throw error
+      }
+
+      const { data: links, error: linkError } = await supabase
+        .from('memory_collections')
+        .select('memory_id')
+        .eq('collection_id', collectionId)
+
+      if (linkError) throw linkError
+      if (!links?.length) return []
+
+      const ids = links.map((row) => row.memory_id)
+      const memories = await Promise.all(ids.map((id) => fetchMemoryById(id)))
+      return memories
+    },
+  })
+
+export const useGetMemoryCollectionIds = (memoryId: string) =>
+  useQuery({
+    queryKey: ['memory-collections', memoryId],
+    enabled: !!memoryId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_memory_collection_ids', {
+        p_memory_id: memoryId,
+      })
+
+      if (!error && data) {
+        return data as string[]
+      }
+
+      if (
+        error &&
+        error.code !== 'PGRST202' &&
+        !error.message.includes('get_memory_collection_ids')
+      ) {
+        throw error
+      }
+
+      const { data: rows, error: rowError } = await supabase
+        .from('memory_collections')
+        .select('collection_id')
+        .eq('memory_id', memoryId)
+
+      if (rowError) throw rowError
+      return (rows ?? []).map((row) => row.collection_id)
+    },
+  })
 
 export const useSearchMemories = (familyId: string, query: string) =>
   useQuery({
     queryKey: ['search', familyId, query],
     enabled: !!familyId && query.trim().length > 0,
     queryFn: async () => {
-      const term = query.trim().replace(/[%(),]/g, '')
-      const { data, error } = await supabase
+      const term = query.trim().toLowerCase()
+
+      const { data: rpcData, error: rpcError } = await supabase.rpc('get_family_memories', {
+        p_family_id: familyId,
+        p_limit: 200,
+        p_offset: 0,
+      })
+
+      if (!rpcError && rpcData) {
+        return rpcData
+          .map(mapMemory)
+          .filter(
+            (memory) =>
+              memory.title.toLowerCase().includes(term) ||
+              (memory.description?.toLowerCase().includes(term) ?? false),
+          )
+      }
+
+      const sanitized = query.trim().replace(/[%(),]/g, '')
+      let result = await supabase
         .from('memories')
-        .select('*, memory_media(*)')
+        .select('*')
         .eq('family_id', familyId)
-        .or(`title.ilike.%${term}%,description.ilike.%${term}%`)
+        .or(`title.ilike.%${sanitized}%,description.ilike.%${sanitized}%`)
         .is('deleted_at', null)
         .order('memory_date', { ascending: false })
-      if (error) throw error
-      return data.map(mapMemory)
+
+      if (result.error?.message.includes('deleted_at') || result.error?.code === '42703') {
+        result = await supabase
+          .from('memories')
+          .select('*')
+          .eq('family_id', familyId)
+          .or(`title.ilike.%${sanitized}%,description.ilike.%${sanitized}%`)
+          .order('memory_date', { ascending: false })
+      }
+
+      if (result.error) throw result.error
+      return (result.data ?? []).map(mapMemory)
     },
   })
 

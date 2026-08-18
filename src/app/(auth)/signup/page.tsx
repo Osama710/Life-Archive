@@ -1,14 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { AuthShell } from "@/components/AuthShell";
+import { Loader } from "@/components/Loader";
 import { useAuth } from "@/context/AuthContext";
 
-export default function SignupPage() {
+function safeNextPath(value: string | null) {
+  return value?.startsWith("/") && !value.startsWith("//") ? value : "/onboarding";
+}
+
+function SignupForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -18,6 +23,14 @@ export default function SignupPage() {
   const [success, setSuccess] = useState(false);
   const { signUp } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = safeNextPath(searchParams.get("next"));
+  const joiningFamily = nextPath.includes("/dashboard/invite");
+
+  useEffect(() => {
+    const prefilled = searchParams.get("email");
+    if (prefilled) setEmail(prefilled);
+  }, [searchParams]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,9 +54,11 @@ export default function SignupPage() {
 
     setLoading(true);
     try {
-      await signUp(name, email, password);
+      await signUp(name, email, password, nextPath);
       setSuccess(true);
-      setTimeout(() => router.push("/login"), 2500);
+      if (!joiningFamily) {
+        setTimeout(() => router.push("/login"), 2500);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Signup failed");
     } finally {
@@ -54,13 +69,17 @@ export default function SignupPage() {
   if (success) {
     return (
       <AuthShell
-        title="You're in the queue"
-        subtitle="One quick email verify and you're good to go."
+        title="Check your email"
+        subtitle={
+          joiningFamily
+            ? "After you verify, you will return here to join the family archive."
+            : "One quick email verify and you're good to go."
+        }
       >
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="text-center py-6"
+          className="py-6 text-center"
         >
           <motion.span
             className="mb-4 inline-block text-5xl"
@@ -74,8 +93,14 @@ export default function SignupPage() {
             Check your inbox, {name.trim().split(" ")[0]}!
           </p>
           <p className="mt-2 text-ink/60">
-            Tap the link in your email to verify. Redirecting to login…
+            Tap the link in your email to verify
+            {joiningFamily ? ", then you will join the family automatically." : ". Redirecting to login…"}
           </p>
+          {joiningFamily && (
+            <p className="mt-4 text-sm text-ink/50">
+              Use <strong>{email}</strong> — it must match the invite email.
+            </p>
+          )}
         </motion.div>
       </AuthShell>
     );
@@ -83,8 +108,12 @@ export default function SignupPage() {
 
   return (
     <AuthShell
-      title="Join the archive"
-      subtitle="Your name shows up everywhere — make it yours."
+      title={joiningFamily ? "Create your account" : "Join the archive"}
+      subtitle={
+        joiningFamily
+          ? "Sign up with the email your partner invited, then accept the family link."
+          : "Your name shows up everywhere — make it yours."
+      }
     >
       <form onSubmit={handleSignup} className="space-y-1">
         <Input
@@ -137,14 +166,22 @@ export default function SignupPage() {
       </form>
 
       <p className="mt-6 text-center text-sm text-ink/55">
-        Already vibing here?{" "}
+        Already have an account?{" "}
         <a
-          href="/login"
+          href={`/login?next=${encodeURIComponent(nextPath)}${email ? `&email=${encodeURIComponent(email)}` : ""}`}
           className="font-semibold text-primary hover:underline"
         >
           Sign in
         </a>
       </p>
     </AuthShell>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<Loader fullScreen label="Loading signup" />}>
+      <SignupForm />
+    </Suspense>
   );
 }

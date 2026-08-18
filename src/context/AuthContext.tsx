@@ -13,6 +13,7 @@ interface AuthContextType {
     displayName: string,
     email: string,
     password: string,
+    redirectPath?: string,
   ) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -51,9 +52,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     displayName: string,
     email: string,
     password: string,
+    redirectPath = "/onboarding",
   ) => {
     const trimmedName = displayName.trim();
-    const emailRedirectTo = `${window.location.origin}/auth/callback?next=/onboarding`;
+    const safeNext =
+      redirectPath.startsWith("/") && !redirectPath.startsWith("//")
+        ? redirectPath
+        : "/onboarding";
+    const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext)}`;
     const { error } = await supabase.auth.signUp({
       email,
       password,

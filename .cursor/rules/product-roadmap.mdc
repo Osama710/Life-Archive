@@ -1,0 +1,23 @@
+---
+description: Remaining Life Archive product features not yet built
+alwaysApply: true
+---
+
+# Life Archive — remaining product work
+
+When the user asks to finish "features not done yet", "what's left", or similar, check `docs/roadmap.md` and implement from this list:
+
+## Still to build
+
+1. **Push notifications** — family invites, On This Day reminders
+2. **Read sealed Letters before unlock date** — optional owner override
+3. **Offline mode / sync queue** — save memories and photos without network
+
+## Recently completed (do not re-list as missing)
+
+- Auto invite emails via Resend (`RESEND_API_KEY`, `INVITE_FROM_EMAIL`)
+- Adding memories to Collections (edit memory, collection detail, RPCs in `20260811131300_fix_collections.sql`)
+
+## Mobile-first
+
+This app is used as an Android PWA. Prefer bottom nav, Home/Explore hubs, and touch UX — not desktop sidebar patterns.
