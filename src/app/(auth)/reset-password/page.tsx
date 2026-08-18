@@ -1,8 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
+import { AuthShell } from "@/components/AuthShell";
 import { useAuth } from "@/context/AuthContext";
 
 export default function ResetPasswordPage() {
@@ -31,59 +34,64 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center max-w-md">
-          <div className="text-5xl mb-4">✉️</div>
-          <h2 className="text-2xl font-bold text-success mb-4">
-            Check Your Email
-          </h2>
-          <p className="text-gray-600 mb-6">
-            We’ve sent a password reset link to {email}
+      <AuthShell
+        title="Check your inbox"
+        subtitle="We sent a reset link — tap it and you're back in."
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="py-4 text-center"
+        >
+          <span className="mb-4 inline-block text-5xl" aria-hidden>
+            ✉️
+          </span>
+          <p className="text-ink/60">
+            Link sent to <strong className="text-ink">{email}</strong>
           </p>
-          <a href="/login" className="text-primary hover:underline">
+          <Link
+            href="/login"
+            className="mt-6 inline-block font-semibold text-primary hover:underline"
+          >
             Back to login
-          </a>
-        </div>
-      </div>
+          </Link>
+        </motion.div>
+      </AuthShell>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold text-primary mb-2 text-center">
-          Reset Password
-        </h1>
-        <p className="text-gray-600 text-center mb-8">
-          Enter your email to receive a reset link
-        </p>
+    <AuthShell
+      title="Reset password"
+      subtitle="Enter your email — we'll send a link to get you back in."
+    >
+      <form onSubmit={handleReset} className="space-y-1">
+        <Input
+          type="email"
+          label="Email"
+          placeholder="you@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
 
-        <form onSubmit={handleReset} className="space-y-4">
-          <Input
-            type="email"
-            label="Email"
-            placeholder="your@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+        {error && (
+          <p className="alert alert-error text-sm" role="alert">
+            {error}
+          </p>
+        )}
 
-          {error && (
-            <p className="text-error text-sm bg-red-50 p-3 rounded">{error}</p>
-          )}
+        <Button type="submit" disabled={loading} className="mt-2 w-full">
+          {loading ? "Sending…" : "Send reset link"}
+        </Button>
+      </form>
 
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Sending..." : "Send Reset Link"}
-          </Button>
-        </form>
-
-        <p className="text-center text-gray-600 mt-6">
-          Remember your password?{" "}
-          <a href="/login" className="text-primary hover:underline font-medium">
-            Sign in
-          </a>
-        </p>
-      </div>
-    </div>
+      <p className="mt-6 text-center text-sm text-ink/55">
+        Remember it?{" "}
+        <Link href="/login" className="font-semibold text-primary hover:underline">
+          Sign in
+        </Link>
+      </p>
+    </AuthShell>
   );
 }

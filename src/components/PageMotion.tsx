@@ -2,12 +2,6 @@
 
 import { motion } from "framer-motion";
 
-const fadeUp = {
-  initial: { opacity: 0, y: 18 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const },
-};
-
 export function PageMotion({
   children,
   className = "",
@@ -15,16 +9,7 @@ export function PageMotion({
   children: React.ReactNode;
   className?: string;
 }) {
-  return (
-    <motion.div
-      initial={fadeUp.initial}
-      animate={fadeUp.animate}
-      transition={fadeUp.transition}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
 
 export function StaggerList({

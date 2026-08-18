@@ -5,6 +5,7 @@ import { useFamily } from '@/context/FamilyContext'
 import { useGetMemories } from '@/hooks/useApi'
 import { useDisplayName } from '@/hooks/useDisplayName'
 import { EmptyState } from '@/components/EmptyState'
+import { PageHeader } from '@/components/PageHeader'
 import { PageMotion, StaggerItem, StaggerList } from '@/components/PageMotion'
 import { EMPTY_HOME } from '@/lib/quotes'
 
@@ -17,21 +18,11 @@ export default function DashboardHomePage() {
 
   return (
     <PageMotion className="space-y-10">
-      <section>
-        <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-primary/80">
-          {family?.name || 'Your archive'}
-        </p>
-        <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
-          Hey {firstName}{' '}
-          <span className="inline-block animate-[float_3s_ease-in-out_infinite]" aria-hidden="true">
-            👋
-          </span>
-        </h1>
-        <p className="mt-3 max-w-2xl text-lg leading-relaxed text-ink/60">
-          This is where the random Tuesday wins and chaotic holiday pics live
-          forever. No judgment. Just vibes.
-        </p>
-      </section>
+      <PageHeader
+        eyebrow={family?.name || 'Your archive'}
+        title={`Hey ${firstName} 👋`}
+        subtitle="This is where the random Tuesday wins and chaotic holiday pics live forever. No judgment. Just vibes."
+      />
 
       <div className="flex flex-wrap gap-3">
         <Link href="/dashboard/memory/create" className="btn btn-primary">

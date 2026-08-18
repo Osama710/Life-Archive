@@ -2,11 +2,16 @@
 
 import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { motion } from 'framer-motion'
 import { useFamily } from '@/context/FamilyContext'
 import { useGetMemories } from '@/hooks/useApi'
+import { PageHeader } from '@/components/PageHeader'
+import { PageMotion, StaggerItem, StaggerList } from '@/components/PageMotion'
+import { EmptyState } from '@/components/EmptyState'
+import { EMPTY_CALENDAR } from '@/lib/quotes'
 
 export default function CalendarPage() {
-  const { familyId } = useFamily()
+  const { familyId, family } = useFamily()
   const [cursor, setCursor] = useState(() => new Date())
   const { data } = useGetMemories(familyId || '', 200, 0)
   const memoryList = data?.memories
@@ -37,36 +42,40 @@ export default function CalendarPage() {
   const selected = byDay.get(selectedDay) || []
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="font-serif text-4xl font-bold">Calendar</h1>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className="btn btn-secondary"
-            aria-label="Previous month"
-            onClick={() => setCursor(new Date(year, month - 1, 1))}
-          >
-            ←
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            aria-label="Next month"
-            onClick={() => setCursor(new Date(year, month + 1, 1))}
-          >
-            →
-          </button>
-        </div>
-      </div>
+    <PageMotion className="mx-auto max-w-4xl">
+      <PageHeader
+        eyebrow={family?.name}
+        title="Calendar"
+        subtitle="Tap a day to see what happened — dot means memories live there."
+        action={
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="btn btn-secondary size-11 px-0"
+              aria-label="Previous month"
+              onClick={() => setCursor(new Date(year, month - 1, 1))}
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary size-11 px-0"
+              aria-label="Next month"
+              onClick={() => setCursor(new Date(year, month + 1, 1))}
+            >
+              →
+            </button>
+          </div>
+        }
+      />
 
-      <p className="mb-4 text-lg font-semibold">
+      <p className="mb-4 font-display text-xl font-bold text-ink">
         {cursor.toLocaleString(undefined, { month: 'long', year: 'numeric' })}
       </p>
 
-      <div className="card-elevated mb-6 grid grid-cols-7 gap-2">
+      <div className="glass-card mb-6 grid grid-cols-7 gap-2 p-4">
         {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
-          <div key={d} className="text-center text-xs font-semibold text-stone-500">
+          <div key={d} className="text-center text-xs font-bold uppercase tracking-wide text-ink/40">
             {d}
           </div>
         ))}
@@ -74,39 +83,50 @@ export default function CalendarPage() {
           day === null ? (
             <div key={`e-${idx}`} />
           ) : (
-            <button
+            <motion.button
               key={day}
               type="button"
+              whileTap={{ scale: 0.96 }}
               aria-label={`${year}-${month + 1}-${day}`}
               onClick={() => setCursor(new Date(year, month, day))}
-              className={`min-h-14 rounded-xl border p-2 text-left ${
-                day === selectedDay ? 'border-primary bg-blue-50' : 'border-stone-200'
+              className={`min-h-14 rounded-2xl border p-2 text-left transition-all ${
+                day === selectedDay
+                  ? 'border-primary/40 bg-gradient-to-br from-violet-500/15 to-fuchsia-500/10 shadow-soft'
+                  : 'border-ink/8 bg-white/50 hover:border-primary/20 hover:bg-white/80'
               }`}
             >
-              <span className="text-sm font-semibold">{day}</span>
+              <span className="text-sm font-bold text-ink">{day}</span>
               {byDay.has(day) && (
-                <span className="mt-2 block size-2 rounded-full bg-warm" aria-hidden />
+                <span className="mt-2 block size-2 rounded-full bg-gradient-brand" aria-hidden />
               )}
-            </button>
+            </motion.button>
           ),
         )}
       </div>
 
       <div className="space-y-3">
         {selected.length === 0 ? (
-          <div className="card-elevated py-10 text-center text-stone-600">
-            No memories on this day
-          </div>
+          <EmptyState
+            emoji={EMPTY_CALENDAR.emoji}
+            title={EMPTY_CALENDAR.title}
+            subtitle={EMPTY_CALENDAR.subtitle}
+            cta="Add memory"
+            href="/dashboard/memory/create"
+          />
         ) : (
-          selected.map((m) => (
-            <Link key={m.id} href={`/dashboard/memory/${m.id}`} className="card-elevated block">
-              <h3 className="font-bold">
-                {m.mood || '📖'} {m.title}
-              </h3>
-            </Link>
-          ))
+          <StaggerList className="space-y-3">
+            {selected.map((m) => (
+              <StaggerItem key={m.id}>
+                <Link href={`/dashboard/memory/${m.id}`} className="card-elevated block">
+                  <h3 className="font-bold text-ink">
+                    {m.mood || '📖'} {m.title}
+                  </h3>
+                </Link>
+              </StaggerItem>
+            ))}
+          </StaggerList>
         )}
       </div>
-    </div>
+    </PageMotion>
   )
 }

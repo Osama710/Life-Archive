@@ -2,10 +2,18 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useCreateMemory } from '@/hooks/useApi'
 import { useAuth } from '@/context/AuthContext'
 import { useFamily } from '@/context/FamilyContext'
 import { GuidedPrompts } from '@/components/GuidedPrompts'
+import { PageHeader } from '@/components/PageHeader'
+import { PageMotion } from '@/components/PageMotion'
+import { EmptyState } from '@/components/EmptyState'
+import { Input } from '@/components/Input'
+import { TextareaField } from '@/components/TextareaField'
+import { SelectField } from '@/components/SelectField'
+import { Button } from '@/components/Button'
 
 const TEMPLATES = [
   { id: 'first-smile', icon: '😊', title: 'First Smile' },
@@ -15,6 +23,8 @@ const TEMPLATES = [
   { id: 'adventure', icon: '🏔️', title: 'Adventure' },
   { id: 'love', icon: '💛', title: 'Everyday Joy' },
 ]
+
+const MOODS = ['😊', '😄', '😍', '😢', '🤔', '🥹', '🔥', '✨']
 
 export default function MemoryCreatePage() {
   const router = useRouter()
@@ -117,160 +127,179 @@ export default function MemoryCreatePage() {
 
   if (!familyId) {
     return (
-      <div className="card-elevated text-center py-16">
-        <p className="mb-4">Finish onboarding before creating memories.</p>
-        <a href="/onboarding" className="btn btn-primary">
-          Continue setup
-        </a>
-      </div>
-    )
-  }
-
-  if (step === 0) {
-    return (
-      <div className="mx-auto max-w-2xl">
-        <h1 className="mb-8 text-center font-serif text-4xl font-bold">New Memory</h1>
-        <p className="mb-8 text-center text-stone-600">Choose a template</p>
-        <div className="grid grid-cols-2 gap-4">
-          {TEMPLATES.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => {
-                setTemplateId(t.id)
-                setTitle(t.title)
-                setStep(1)
-              }}
-              className="card-elevated p-8 text-center hover:scale-[1.02]"
-            >
-              <div className="mb-3 text-5xl" aria-hidden>
-                {t.icon}
-              </div>
-              <p className="font-bold">{t.title}</p>
-            </button>
-          ))}
-        </div>
-      </div>
+      <PageMotion className="mx-auto max-w-lg">
+        <EmptyState
+          emoji="🏡"
+          title="Set up your archive first"
+          subtitle="Finish onboarding before capturing memories."
+          cta="Continue setup"
+          href="/onboarding"
+        />
+      </PageMotion>
     )
   }
 
   return (
-    <div className="mx-auto max-w-2xl animate-slide-up">
-      <h1 className="mb-8 font-serif text-4xl font-bold">Create Memory</h1>
-      <div className="card-elevated space-y-6">
-        {children.length > 0 && (
-          <div>
-            <label className="form-label" htmlFor="child">
-              Child
-            </label>
-            <select
-              id="child"
-              className="input-field"
-              value={childId || ''}
-              onChange={(e) => setChildId(e.target.value || null)}
-            >
-              <option value="">Whole family</option>
-              {children.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        <div>
-          <label className="form-label" htmlFor="title">
-            Title
-          </label>
-          <input
-            id="title"
-            className="input-field"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="form-label" htmlFor="date">
-            Date
-          </label>
-          <input
-            id="date"
-            type="date"
-            className="input-field"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </div>
-        <div>
-          <p className="form-label">How did you feel?</p>
-          <div className="grid grid-cols-5 gap-2">
-            {['😊', '😄', '😍', '😢', '🤔'].map((e) => (
-              <button
-                key={e}
-                type="button"
-                aria-pressed={mood === e}
-                onClick={() => setMood(e)}
-                className={`rounded-lg border-2 p-3 text-3xl ${
-                  mood === e ? 'border-primary bg-blue-50' : 'border-stone-200'
-                }`}
-              >
-                {e}
-              </button>
-            ))}
-          </div>
-        </div>
-        <div>
-          <label className="form-label" htmlFor="location">
-            Location
-          </label>
-          <input
-            id="location"
-            className="input-field"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Home, hospital…"
-          />
-        </div>
-        <div>
-          <label className="form-label" htmlFor="desc">
-            Story
-          </label>
-          <textarea
-            id="desc"
-            className="input-field h-32"
-            value={desc}
-            onChange={(e) => setDesc(e.target.value)}
-            placeholder="Tell the story…"
-          />
-        </div>
-        <GuidedPrompts memoryType={templateId} onAnswersChange={setPrompts} />
-        <div>
-          <label className="form-label" htmlFor="media">
-            Photo or video (optional)
-          </label>
-          <input
-            id="media"
-            type="file"
-            accept="image/*,video/*"
-            className="input-field"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-          />
-        </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <div className="flex gap-2">
-          <button type="button" onClick={() => setStep(0)} className="btn btn-secondary flex-1">
-            Back
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={create.isPending}
-            className="btn btn-primary flex-1"
+    <PageMotion className="mx-auto max-w-2xl">
+      <AnimatePresence mode="wait">
+        {step === 0 ? (
+          <motion.div
+            key="templates"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           >
-            {create.isPending ? 'Saving…' : 'Save'}
-          </button>
-        </div>
-      </div>
-    </div>
+            <PageHeader
+              title="New memory"
+              subtitle="Pick a vibe — or just start from scratch."
+            />
+            <div className="grid grid-cols-2 gap-4">
+              {TEMPLATES.map((t, i) => (
+                <motion.button
+                  key={t.id}
+                  type="button"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  whileHover={{ scale: 1.03, y: -4 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    setTemplateId(t.id)
+                    setTitle(t.title)
+                    setStep(1)
+                  }}
+                  className="glass-card p-8 text-center"
+                >
+                  <div className="mb-3 text-5xl" aria-hidden>
+                    {t.icon}
+                  </div>
+                  <p className="font-display font-bold text-ink">{t.title}</p>
+                </motion.button>
+              ))}
+            </div>
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setTemplateId('custom')
+                  setStep(1)
+                }}
+                className="text-sm font-semibold text-primary hover:underline"
+              >
+                Skip — start blank
+              </button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="form"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <PageHeader title="Create memory" subtitle="The details that make it yours." />
+            <div className="glass-card space-y-2 p-6">
+              {children.length > 0 && (
+                <SelectField
+                  label="Child"
+                  id="child"
+                  value={childId || ''}
+                  onChange={(e) => setChildId(e.target.value || null)}
+                >
+                  <option value="">Whole family</option>
+                  {children.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </SelectField>
+              )}
+              <Input
+                id="title"
+                label="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <Input
+                id="date"
+                type="date"
+                label="Date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+              />
+              <div className="mb-4">
+                <p className="form-label">How did you feel?</p>
+                <div className="grid grid-cols-4 gap-2 sm:grid-cols-8">
+                  {MOODS.map((e) => (
+                    <motion.button
+                      key={e}
+                      type="button"
+                      whileTap={{ scale: 0.92 }}
+                      aria-pressed={mood === e}
+                      onClick={() => setMood(e)}
+                      className={`rounded-2xl border-2 p-2 text-2xl transition ${
+                        mood === e
+                          ? 'border-primary/40 bg-gradient-to-br from-violet-500/15 to-fuchsia-500/10 shadow-soft'
+                          : 'border-ink/8 bg-white/60 hover:border-primary/20'
+                      }`}
+                    >
+                      {e}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+              <Input
+                id="location"
+                label="Location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Home, hospital, that one café…"
+              />
+              <TextareaField
+                id="desc"
+                label="Story"
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+                placeholder="Tell the story…"
+                rows={4}
+              />
+              <GuidedPrompts memoryType={templateId} onAnswersChange={setPrompts} />
+              <div className="mb-4">
+                <label className="form-label" htmlFor="media">
+                  Photo or video (optional)
+                </label>
+                <input
+                  id="media"
+                  type="file"
+                  accept="image/*,video/*"
+                  className="input-field file:mr-4 file:rounded-xl file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:font-semibold file:text-primary"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                />
+              </div>
+              {error && (
+                <p className="alert alert-error text-sm" role="alert">
+                  {error}
+                </p>
+              )}
+              <div className="flex gap-2 pt-2">
+                <Button type="button" variant="secondary" onClick={() => setStep(0)} className="flex-1">
+                  Back
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={create.isPending}
+                  className="flex-1"
+                >
+                  {create.isPending ? 'Saving…' : 'Save memory'}
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </PageMotion>
   )
 }

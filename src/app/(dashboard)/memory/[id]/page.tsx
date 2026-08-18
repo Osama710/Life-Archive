@@ -3,6 +3,11 @@
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useDeleteMemory, useGetMemory } from '@/hooks/useApi'
+import { BackLink } from '@/components/BackLink'
+import { PageMotion } from '@/components/PageMotion'
+import { Loader } from '@/components/Loader'
+import { EmptyState } from '@/components/EmptyState'
+import { Button } from '@/components/Button'
 
 export default function MemoryDetailPage() {
   const params = useParams<{ id: string }>()
@@ -10,76 +15,87 @@ export default function MemoryDetailPage() {
   const { data: memory, isLoading, isError } = useGetMemory(params.id)
   const remove = useDeleteMemory()
 
-  if (isLoading) return <div className="spinner mx-auto mt-8" />
+  if (isLoading) return <Loader label="Loading memory" />
   if (isError || !memory) {
     return (
-      <div className="card-elevated text-center py-16">
-        <p className="mb-4">Memory not found.</p>
-        <Link href="/dashboard/timeline" className="btn btn-primary">
-          Back to timeline
-        </Link>
-      </div>
+      <PageMotion className="mx-auto max-w-lg">
+        <EmptyState
+          emoji="🔍"
+          title="Memory not found"
+          subtitle="It might've moved to trash or never existed. Happens to the best of us."
+          cta="Back to timeline"
+          href="/dashboard/timeline"
+        />
+      </PageMotion>
     )
   }
 
   return (
-    <div className="mx-auto max-w-3xl">
-      <Link href="/dashboard/timeline" className="mb-6 inline-block text-sm text-primary">
-        ← Timeline
-      </Link>
-      <article className="card-elevated">
-        <div className="mb-4 flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-stone-500">
-              {new Date(memory.memoryDate).toLocaleDateString()}
-              {memory.location ? ` · ${memory.location}` : ''}
-            </p>
-            <h1 className="font-serif text-4xl font-bold">
-              {memory.mood ? `${memory.mood} ` : ''}
-              {memory.title}
-            </h1>
-          </div>
-          {memory.isFavorite && <span className="badge badge-primary">Favorite</span>}
-        </div>
-        {memory.description && (
-          <p className="whitespace-pre-wrap text-lg leading-relaxed text-stone-700">
-            {memory.description}
-          </p>
-        )}
+    <PageMotion className="mx-auto max-w-3xl">
+      <BackLink href="/dashboard/timeline" label="Timeline" />
+
+      <article className="glass-card overflow-hidden p-0">
         {memory.media && memory.media.length > 0 && (
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-1 sm:grid-cols-2">
             {memory.media.map((m) =>
               m.mediaType === 'video' ? (
-                <video key={m.id} src={m.secureUrl} controls className="w-full rounded-lg" />
+                <video key={m.id} src={m.secureUrl} controls className="w-full object-cover" />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   key={m.id}
                   src={m.secureUrl || m.url}
                   alt={m.fileName || memory.title}
-                  className="w-full rounded-lg object-cover"
+                  className="aspect-video w-full object-cover"
                 />
               ),
             )}
           </div>
         )}
-        <div className="mt-8 flex gap-2">
-          <Link href={`/dashboard/memory/${memory.id}/edit`} className="btn btn-secondary">
-            Edit
-          </Link>
-          <button
-            type="button"
-            className="btn btn-danger"
-            disabled={remove.isPending}
-            onClick={async () => {
-              await remove.mutateAsync(memory.id)
-              router.replace('/dashboard/timeline')
-            }}
-          >
-            Move to trash
-          </button>
+
+        <div className="p-6 sm:p-8">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-ink/50">
+                {new Date(memory.memoryDate).toLocaleDateString(undefined, {
+                  weekday: 'long',
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+                {memory.location ? ` · 📍 ${memory.location}` : ''}
+              </p>
+              <h1 className="mt-2 font-display text-4xl font-bold tracking-tight text-ink">
+                {memory.mood ? `${memory.mood} ` : ''}
+                {memory.title}
+              </h1>
+            </div>
+            {memory.isFavorite && <span className="badge badge-primary">Favorite</span>}
+          </div>
+
+          {memory.description && (
+            <p className="whitespace-pre-wrap text-lg leading-relaxed text-ink/75">
+              {memory.description}
+            </p>
+          )}
+
+          <div className="mt-8 flex flex-wrap gap-2">
+            <Link href={`/dashboard/memory/${memory.id}/edit`}>
+              <Button variant="secondary">Edit</Button>
+            </Link>
+            <Button
+              variant="danger"
+              disabled={remove.isPending}
+              onClick={async () => {
+                await remove.mutateAsync(memory.id)
+                router.replace('/dashboard/timeline')
+              }}
+            >
+              Move to trash
+            </Button>
+          </div>
         </div>
       </article>
-    </div>
+    </PageMotion>
   )
 }

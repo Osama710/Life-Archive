@@ -1,9 +1,17 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuth } from '@/context/AuthContext'
 import { useFamily } from '@/context/FamilyContext'
 import { useCreateCollection, useGetCollections } from '@/hooks/useApi'
+import { PageHeader } from '@/components/PageHeader'
+import { PageMotion, StaggerItem, StaggerList } from '@/components/PageMotion'
+import { Loader } from '@/components/Loader'
+import { EmptyState } from '@/components/EmptyState'
+import { Input } from '@/components/Input'
+import { Button } from '@/components/Button'
+import { EMPTY_COLLECTIONS, EMPTY_FAMILY } from '@/lib/quotes'
 
 export default function CollectionsPage() {
   const { user } = useAuth()
@@ -25,54 +33,84 @@ export default function CollectionsPage() {
   }
 
   if (!familyId) {
-    return <p className="text-stone-600">Finish family setup to organize collections.</p>
+    return (
+      <PageMotion>
+        <EmptyState
+          emoji={EMPTY_FAMILY.emoji}
+          title={EMPTY_FAMILY.title}
+          subtitle={EMPTY_FAMILY.subtitle}
+          cta={EMPTY_FAMILY.cta}
+          href="/onboarding"
+        />
+      </PageMotion>
+    )
   }
 
   return (
-    <div>
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="font-serif text-4xl font-bold">Collections</h1>
-        <button type="button" onClick={() => setShow(true)} className="btn btn-primary">
-          + New
-        </button>
-      </div>
+    <PageMotion>
+      <PageHeader
+        title="Collections"
+        subtitle="Curate memories into albums that actually mean something."
+        action={
+          <Button type="button" onClick={() => setShow(true)}>
+            + New
+          </Button>
+        }
+      />
 
-      {show && (
-        <div className="card-elevated mb-8 space-y-4">
-          <input
-            className="input-field"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Collection name"
-            autoFocus
-          />
-          <div className="flex gap-2">
-            <button type="button" onClick={add} className="btn btn-primary flex-1">
-              Create
-            </button>
-            <button type="button" onClick={() => setShow(false)} className="btn btn-secondary flex-1">
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {show && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="mb-8 overflow-hidden"
+          >
+            <div className="glass-card space-y-4 p-6">
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Collection name"
+                label="Name"
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button type="button" onClick={add} className="flex-1" disabled={create.isPending}>
+                  Create
+                </Button>
+                <Button type="button" variant="secondary" onClick={() => setShow(false)} className="flex-1">
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {isLoading ? (
-        <div className="spinner mx-auto" />
+        <Loader label="Loading collections" />
       ) : cols.length === 0 ? (
-        <div className="card-elevated py-16 text-center">
-          <p>No collections yet</p>
-        </div>
+        <EmptyState
+          emoji={EMPTY_COLLECTIONS.emoji}
+          title={EMPTY_COLLECTIONS.title}
+          subtitle={EMPTY_COLLECTIONS.subtitle}
+          cta={EMPTY_COLLECTIONS.cta}
+          onAction={() => setShow(true)}
+        />
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <StaggerList className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {cols.map((c) => (
-            <div key={c.id} className="card-elevated">
-              <h3 className="text-lg font-bold">{c.name}</h3>
-              <p className="mt-2 text-sm text-stone-600">{c.description || 'No description'}</p>
-            </div>
+            <StaggerItem key={c.id}>
+              <div className="glass-card h-full p-6 transition hover:shadow-lift">
+                <h3 className="font-display text-lg font-bold text-ink">{c.name}</h3>
+                <p className="mt-2 text-sm text-ink/55">
+                  {c.description || 'No description yet — still iconic.'}
+                </p>
+              </div>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       )}
-    </div>
+    </PageMotion>
   )
 }

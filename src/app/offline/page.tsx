@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { MeshBackground } from '@/components/MeshBackground'
 
 export const metadata: Metadata = {
   title: 'Offline · Life Archive',
@@ -7,12 +8,18 @@ export const metadata: Metadata = {
 
 export default function OfflinePage() {
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-cream p-6">
-      <div className="max-w-md text-center">
-        <h1 className="mb-3 font-serif text-4xl font-bold">You’re offline</h1>
-        <p className="mb-6 text-stone-600">
-          Your saved pages and queued memories stay on this device. We’ll sync when you’re back
-          online.
+    <main className="relative flex min-h-dvh items-center justify-center p-6">
+      <MeshBackground />
+      <div className="glass-card max-w-md px-8 py-12 text-center">
+        <span className="mb-4 inline-block text-5xl" aria-hidden>
+          📡
+        </span>
+        <h1 className="font-display text-4xl font-bold tracking-tight text-ink">
+          You&apos;re offline
+        </h1>
+        <p className="mb-8 mt-3 text-ink/60">
+          Saved pages and queued memories stay on this device. We&apos;ll sync when
+          you&apos;re back online.
         </p>
         <Link href="/dashboard" className="btn btn-primary">
           Try again

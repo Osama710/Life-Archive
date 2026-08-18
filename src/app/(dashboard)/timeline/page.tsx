@@ -5,6 +5,7 @@ import { useFamily } from '@/context/FamilyContext'
 import { useGetMemories } from '@/hooks/useApi'
 import { Loader } from '@/components/Loader'
 import { EmptyState } from '@/components/EmptyState'
+import { PageHeader } from '@/components/PageHeader'
 import { PageMotion, StaggerItem, StaggerList } from '@/components/PageMotion'
 import { EMPTY_TIMELINE } from '@/lib/quotes'
 
@@ -41,17 +42,11 @@ export default function TimelinePage() {
 
   return (
     <PageMotion>
-      <div className="mb-10">
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary/80">
-          {family?.name}
-        </p>
-        <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
-          Timeline
-        </h1>
-        <p className="mt-2 text-lg text-ink/60">
-          Every moment, chronologically unbothered.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow={family?.name}
+        title="Timeline"
+        subtitle="Every moment, chronologically unbothered."
+      />
 
       <div className="mb-8">
         <Link href="/dashboard/memory/create" className="btn btn-primary">

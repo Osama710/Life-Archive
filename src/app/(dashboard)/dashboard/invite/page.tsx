@@ -1,9 +1,14 @@
 'use client'
 
 import { Suspense, useState } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { motion } from 'framer-motion'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/context/AuthContext'
+import { PageMotion } from '@/components/PageMotion'
+import { Loader } from '@/components/Loader'
+import { Button } from '@/components/Button'
 
 const supabase = createClient()
 
@@ -36,24 +41,48 @@ function AcceptInviteInner() {
   }
 
   return (
-    <div className="card-elevated space-y-4 text-center">
-      <h1 className="font-serif text-3xl font-bold">Join family</h1>
-      <p className="text-stone-600">Accept your invitation to start preserving memories together.</p>
-      {!user && <p className="text-sm text-amber-700">Please sign in first.</p>}
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <button type="button" className="btn btn-primary w-full" disabled={pending || !user} onClick={accept}>
-        {pending ? 'Joining…' : 'Accept invite'}
-      </button>
-    </div>
+    <PageMotion className="mx-auto flex max-w-md flex-col items-center justify-center py-10">
+      <div className="glass-card w-full space-y-5 p-8 text-center">
+        <motion.span
+          className="inline-block text-5xl"
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 2.5, repeat: Infinity }}
+          aria-hidden
+        >
+          👨‍👩‍👧
+        </motion.span>
+        <div>
+          <h1 className="font-display text-3xl font-bold text-ink">Join the family</h1>
+          <p className="mt-2 text-ink/60">
+            Accept your invitation to start preserving memories together.
+          </p>
+        </div>
+        {!user && (
+          <p className="alert alert-warning text-sm">
+            Please{' '}
+            <Link href="/login" className="font-semibold underline">
+              sign in
+            </Link>{' '}
+            first, then open this link again.
+          </p>
+        )}
+        {error && (
+          <p className="alert alert-error text-sm" role="alert">
+            {error}
+          </p>
+        )}
+        <Button type="button" className="w-full" disabled={pending || !user} onClick={accept}>
+          {pending ? 'Joining…' : 'Accept invite'}
+        </Button>
+      </div>
+    </PageMotion>
   )
 }
 
 export default function AcceptInvitePage() {
   return (
-    <div className="mx-auto max-w-md py-16">
-      <Suspense fallback={<div className="spinner mx-auto" />}>
-        <AcceptInviteInner />
-      </Suspense>
-    </div>
+    <Suspense fallback={<Loader label="Loading invite" />}>
+      <AcceptInviteInner />
+    </Suspense>
   )
 }

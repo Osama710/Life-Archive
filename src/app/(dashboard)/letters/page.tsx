@@ -5,6 +5,13 @@ import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { useFamily } from '@/context/FamilyContext'
 import { createClient } from '@/lib/supabase/client'
+import { PageHeader } from '@/components/PageHeader'
+import { PageMotion, StaggerItem, StaggerList } from '@/components/PageMotion'
+import { EmptyState } from '@/components/EmptyState'
+import { Input } from '@/components/Input'
+import { TextareaField } from '@/components/TextareaField'
+import { Button } from '@/components/Button'
+import { EMPTY_LETTERS } from '@/lib/quotes'
 
 const supabase = createClient()
 
@@ -61,51 +68,77 @@ export default function LettersPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
-      <div>
-        <h1 className="font-serif text-4xl font-bold">Letters</h1>
-        <p className="text-stone-600">Write a note that unlocks later.</p>
-      </div>
+    <PageMotion className="mx-auto max-w-2xl space-y-8">
+      <PageHeader
+        title="Letters"
+        subtitle="Seal a note for future-you — or someone you love. Unlocks on your date."
+      />
 
-      <div className="card-elevated space-y-4">
-        <input
-          className="input-field"
-          placeholder="Letter title"
+      <section className="glass-card space-y-4 p-6">
+        <Input
+          label="Letter title"
+          placeholder="To my 18-year-old self…"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <textarea
-          className="input-field h-32"
+        <TextareaField
+          label="Your letter"
           placeholder="Dear future you…"
           value={body}
           onChange={(e) => setBody(e.target.value)}
+          rows={5}
         />
-        <input
+        <Input
           type="date"
-          className="input-field"
+          label="Unlock date"
           value={unlockAt}
           onChange={(e) => setUnlockAt(e.target.value)}
         />
-        <button type="button" className="btn btn-primary" onClick={save}>
-          Seal letter
-        </button>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-      </div>
+        <Button type="button" onClick={save}>
+          Seal letter 🔒
+        </Button>
+        {error && (
+          <p className="alert alert-error text-sm" role="alert">
+            {error}
+          </p>
+        )}
+      </section>
 
-      <div className="space-y-3">
-        {items.map((item) => {
-          const unlocked = new Date(item.unlock_at) <= new Date()
-          return (
-            <div key={item.id} className="card-elevated">
-              <h3 className="font-bold">{item.title}</h3>
-              <p className="text-sm text-stone-600">
-                {unlocked ? 'Unlocked' : 'Sealed until'}{' '}
-                {new Date(item.unlock_at).toLocaleDateString()}
-              </p>
-            </div>
-          )
-        })}
-      </div>
-    </div>
+      {items.length === 0 ? (
+        <EmptyState
+          emoji={EMPTY_LETTERS.emoji}
+          title={EMPTY_LETTERS.title}
+          subtitle={EMPTY_LETTERS.subtitle}
+        />
+      ) : (
+        <StaggerList className="space-y-3">
+          {items.map((item) => {
+            const unlocked = new Date(item.unlock_at) <= new Date()
+            return (
+              <StaggerItem key={item.id}>
+                <div className="glass-card p-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-display text-lg font-bold text-ink">{item.title}</h3>
+                    <span
+                      className={`badge shrink-0 ${unlocked ? 'badge-success' : 'badge-primary'}`}
+                    >
+                      {unlocked ? 'Unlocked' : 'Sealed'}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-ink/55">
+                    {unlocked ? 'Ready to read' : 'Opens'}{' '}
+                    {new Date(item.unlock_at).toLocaleDateString(undefined, {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
+                  </p>
+                </div>
+              </StaggerItem>
+            )
+          })}
+        </StaggerList>
+      )}
+    </PageMotion>
   )
 }

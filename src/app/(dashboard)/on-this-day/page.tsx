@@ -4,44 +4,67 @@ import Link from 'next/link'
 import { useMemo } from 'react'
 import { useFamily } from '@/context/FamilyContext'
 import { useGetMemories } from '@/hooks/useApi'
+import { PageHeader } from '@/components/PageHeader'
+import { PageMotion, StaggerItem, StaggerList } from '@/components/PageMotion'
+import { Loader } from '@/components/Loader'
+import { EmptyState } from '@/components/EmptyState'
+import { EMPTY_ON_THIS_DAY } from '@/lib/quotes'
 
 export default function OnThisDayPage() {
   const { familyId } = useFamily()
   const { data, isLoading } = useGetMemories(familyId || '', 200, 0)
 
+  const today = new Date()
+  const dateLabel = today.toLocaleDateString(undefined, {
+    month: 'long',
+    day: 'numeric',
+  })
+
+  const month = today.getMonth()
+  const day = today.getDate()
+
   const matches = useMemo(() => {
-    const today = new Date()
     const memories = data?.memories || []
-    const month = today.getMonth()
-    const day = today.getDate()
     return memories.filter((m) => {
       const d = new Date(m.memoryDate)
       return d.getMonth() === month && d.getDate() === day
     })
-  }, [data?.memories])
+  }, [data?.memories, month, day])
 
   return (
-    <div className="mx-auto max-w-2xl">
-      <h1 className="mb-2 font-serif text-4xl font-bold">On This Day</h1>
-      <p className="mb-8 text-stone-600">Memories from this date in past years.</p>
+    <PageMotion className="mx-auto max-w-2xl">
+      <PageHeader
+        eyebrow={dateLabel}
+        title="On This Day"
+        subtitle="Memories from this date in years past — nostalgia unlocked."
+      />
+
       {isLoading ? (
-        <div className="spinner mx-auto" />
+        <Loader label="Loading memories" />
       ) : matches.length === 0 ? (
-        <div className="card-elevated py-16 text-center text-stone-600">
-          No memories for this date yet.
-        </div>
+        <EmptyState
+          emoji={EMPTY_ON_THIS_DAY.emoji}
+          title={EMPTY_ON_THIS_DAY.title}
+          subtitle={EMPTY_ON_THIS_DAY.subtitle}
+          cta={EMPTY_ON_THIS_DAY.cta}
+          href="/dashboard/memory/create"
+        />
       ) : (
-        <div className="space-y-3">
+        <StaggerList className="space-y-3">
           {matches.map((m) => (
-            <Link key={m.id} href={`/dashboard/memory/${m.id}`} className="card-elevated block">
-              <p className="text-sm text-stone-500">{new Date(m.memoryDate).getFullYear()}</p>
-              <h3 className="font-bold">
-                {m.mood || '📖'} {m.title}
-              </h3>
-            </Link>
+            <StaggerItem key={m.id}>
+              <Link href={`/dashboard/memory/${m.id}`} className="card-elevated block">
+                <p className="text-sm font-semibold text-primary">
+                  {new Date(m.memoryDate).getFullYear()}
+                </p>
+                <h3 className="mt-1 font-bold text-ink">
+                  {m.mood || '📖'} {m.title}
+                </h3>
+              </Link>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerList>
       )}
-    </div>
+    </PageMotion>
   )
 }

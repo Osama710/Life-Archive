@@ -1,8 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useFamily } from '@/context/FamilyContext'
 import { createClient } from '@/lib/supabase/client'
+import { PageHeader } from '@/components/PageHeader'
+import { PageMotion } from '@/components/PageMotion'
+import { Input } from '@/components/Input'
+import { Button } from '@/components/Button'
+import { SelectField } from '@/components/SelectField'
 
 const supabase = createClient()
 
@@ -12,11 +18,13 @@ export default function FamilyPage() {
   const [role, setRole] = useState<'editor' | 'viewer'>('editor')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [copied, setCopied] = useState(false)
 
   const invite = async () => {
     if (!familyId || !email.trim()) return
     setError('')
     setMessage('')
+    setCopied(false)
     const {
       data: { user },
     } = await supabase.auth.getUser()
@@ -41,25 +49,29 @@ export default function FamilyPage() {
       return
     }
     const link = `${window.location.origin}/dashboard/invite?token=${token}`
-    setMessage(`Invite link (share privately): ${link}`)
+    setMessage(link)
     setEmail('')
   }
 
+  const copyLink = async () => {
+    if (!message) return
+    await navigator.clipboard.writeText(message)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
   return (
-    <div className="mx-auto max-w-2xl space-y-8">
-      <div>
-        <h1 className="font-serif text-4xl font-bold">Family</h1>
-        <p className="text-stone-600">Manage members and switch archives.</p>
-      </div>
+    <PageMotion className="mx-auto max-w-2xl space-y-6">
+      <PageHeader
+        title="Family"
+        subtitle="Invite your people. Owner, editor, viewer — everyone gets a role."
+      />
 
       {families.length > 1 && (
-        <div className="card-elevated">
-          <label className="form-label" htmlFor="family">
-            Active family
-          </label>
-          <select
+        <section className="glass-card p-6">
+          <SelectField
+            label="Active family"
             id="family"
-            className="input-field"
             value={familyId || ''}
             onChange={(e) => setFamilyId(e.target.value)}
           >
@@ -68,38 +80,69 @@ export default function FamilyPage() {
                 {f.name}
               </option>
             ))}
-          </select>
-        </div>
+          </SelectField>
+        </section>
       )}
 
-      <div className="card-elevated">
-        <h2 className="mb-2 text-xl font-bold">{family?.name || 'No family selected'}</h2>
-        <p className="text-sm text-stone-600">Invite family with Owner / Editor / Viewer roles.</p>
-      </div>
+      <section className="glass-card p-6">
+        <h2 className="font-display text-xl font-bold text-ink">
+          {family?.name || 'No family selected'}
+        </h2>
+        <p className="mt-2 text-sm text-ink/55">
+          Share your archive with the people who were actually there.
+        </p>
+      </section>
 
-      <div className="card-elevated space-y-4">
-        <h3 className="font-bold">Invite member</h3>
-        <input
+      <section className="glass-card space-y-4 p-6">
+        <h3 className="font-display text-lg font-bold">Invite member</h3>
+        <Input
           type="email"
-          className="input-field"
-          placeholder="email@example.com"
+          label="Email"
+          placeholder="someone@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <select
-          className="input-field"
+        <SelectField
+          label="Role"
           value={role}
           onChange={(e) => setRole(e.target.value as 'editor' | 'viewer')}
         >
-          <option value="editor">Editor</option>
-          <option value="viewer">Viewer</option>
-        </select>
-        <button type="button" className="btn btn-primary" onClick={invite}>
-          Send invite
-        </button>
-        {message && <p className="text-sm text-green-700">{message}</p>}
-        {error && <p className="text-sm text-red-600">{error}</p>}
-      </div>
-    </div>
+          <option value="editor">Editor — can add & edit</option>
+          <option value="viewer">Viewer — look only</option>
+        </SelectField>
+        <Button type="button" onClick={invite}>
+          Generate invite link
+        </Button>
+
+        <AnimatePresence>
+          {error && (
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="alert alert-error text-sm"
+              role="alert"
+            >
+              {error}
+            </motion.p>
+          )}
+          {message && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-xl bg-white/60 p-4"
+            >
+              <p className="mb-2 text-xs font-bold uppercase tracking-wide text-ink/45">
+                Share this link privately
+              </p>
+              <p className="break-all text-sm text-ink/70">{message}</p>
+              <Button type="button" variant="secondary" className="mt-3" onClick={copyLink}>
+                {copied ? 'Copied!' : 'Copy link'}
+              </Button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </section>
+    </PageMotion>
   )
 }

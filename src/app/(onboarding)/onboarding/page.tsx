@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/Button'
 import { Input } from '@/components/Input'
+import { AuthShell } from '@/components/AuthShell'
 import { useAuth } from '@/context/AuthContext'
 import { useCreateChild, useCreateFamily } from '@/hooks/useApi'
 
@@ -54,22 +56,35 @@ export default function OnboardingPage() {
   }
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-stone-50 p-4">
-      <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-primary">
-          Welcome
-        </p>
-        <h1 className="mb-2 font-serif text-3xl font-bold">
-          {step === 0 ? 'Name your family archive' : 'Add your first child'}
-        </h1>
-        <p className="mb-6 text-stone-600">
-          {step === 0
-            ? 'This becomes the home for every story you preserve.'
-            : 'You can add more children later. Start with one.'}
-        </p>
+    <AuthShell
+      title={step === 0 ? 'Name your archive' : 'Add your first child'}
+      subtitle={
+        step === 0
+          ? 'This becomes the home for every story you preserve.'
+          : 'You can add more later — start with one.'
+      }
+    >
+      <div className="mb-6 flex gap-2">
+        {[0, 1].map((s) => (
+          <div
+            key={s}
+            className={`h-1.5 flex-1 rounded-full transition-all ${
+              s <= step ? 'bg-gradient-brand' : 'bg-ink/10'
+            }`}
+          />
+        ))}
+      </div>
 
+      <AnimatePresence mode="wait">
         {step === 0 ? (
-          <form onSubmit={handleFamily} className="space-y-4">
+          <motion.form
+            key="family"
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 16 }}
+            onSubmit={handleFamily}
+            className="space-y-4"
+          >
             <Input
               label="Family name"
               value={familyName}
@@ -77,13 +92,24 @@ export default function OnboardingPage() {
               placeholder="The Khan Family"
               required
             />
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <p className="alert alert-error text-sm" role="alert">
+                {error}
+              </p>
+            )}
             <Button type="submit" className="w-full" disabled={createFamily.isPending}>
               {createFamily.isPending ? 'Creating…' : 'Continue'}
             </Button>
-          </form>
+          </motion.form>
         ) : (
-          <form onSubmit={handleChild} className="space-y-4">
+          <motion.form
+            key="child"
+            initial={{ opacity: 0, x: 16 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -16 }}
+            onSubmit={handleChild}
+            className="space-y-4"
+          >
             <Input
               label="Child name"
               value={childName}
@@ -96,13 +122,17 @@ export default function OnboardingPage() {
               value={birthDate}
               onChange={(e) => setBirthDate(e.target.value)}
             />
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <p className="alert alert-error text-sm" role="alert">
+                {error}
+              </p>
+            )}
             <Button type="submit" className="w-full" disabled={createChild.isPending}>
-              {createChild.isPending ? 'Saving…' : 'Enter timeline'}
+              {createChild.isPending ? 'Saving…' : 'Enter timeline ✨'}
             </Button>
-          </form>
+          </motion.form>
         )}
-      </div>
-    </main>
+      </AnimatePresence>
+    </AuthShell>
   )
 }

@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useDisplayName } from "@/hooks/useDisplayName";
+import { DashboardPageTransition } from "@/components/DashboardPageTransition";
 
 const navigation = [
   { label: "Home", href: "/dashboard", icon: Home },
@@ -108,7 +109,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       <main id="main-content" className="pb-24 lg:ml-72 lg:pb-0">
         <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-10 lg:py-10">
-          {children}
+          <DashboardPageTransition>{children}</DashboardPageTransition>
         </div>
       </main>
 

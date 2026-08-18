@@ -1,10 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
+import { AuthShell } from "@/components/AuthShell";
 import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 const supabase = createClient();
 
@@ -43,44 +45,42 @@ export default function UpdatePasswordPage() {
   };
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-stone-50 p-4">
-      <div className="w-full max-w-md rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-        <h1 className="mb-2 text-center text-3xl font-bold text-primary">
-          Choose a new password
-        </h1>
-        <p className="mb-8 text-center text-stone-600">
-          Make it memorable and unique.
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            type="password"
-            label="New password"
-            autoComplete="new-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-          <Input
-            type="password"
-            label="Confirm password"
-            autoComplete="new-password"
-            value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
-            required
-          />
-          {error && (
-            <p
-              role="alert"
-              className="rounded-lg bg-red-50 p-3 text-sm text-red-700"
-            >
-              {error}
-            </p>
-          )}
-          <Button type="submit" disabled={loading} className="w-full">
-            {loading ? "Updating…" : "Update password"}
-          </Button>
-        </form>
-      </div>
-    </main>
+    <AuthShell
+      title="New password"
+      subtitle="Make it memorable and unique — future you will thank you."
+    >
+      <form onSubmit={handleSubmit} className="space-y-1">
+        <Input
+          type="password"
+          label="New password"
+          autoComplete="new-password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          required
+        />
+        <Input
+          type="password"
+          label="Confirm password"
+          autoComplete="new-password"
+          value={confirmPassword}
+          onChange={(event) => setConfirmPassword(event.target.value)}
+          required
+        />
+        {error && (
+          <p className="alert alert-error text-sm" role="alert">
+            {error}
+          </p>
+        )}
+        <Button type="submit" disabled={loading} className="mt-2 w-full">
+          {loading ? "Updating…" : "Update password"}
+        </Button>
+      </form>
+
+      <p className="mt-6 text-center text-sm text-ink/55">
+        <Link href="/login" className="text-primary hover:underline">
+          Back to login
+        </Link>
+      </p>
+    </AuthShell>
   );
 }
