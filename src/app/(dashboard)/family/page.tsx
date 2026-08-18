@@ -32,7 +32,8 @@ export default function FamilyPage() {
     hasFamily,
   )
   const myMembership = members.find((member) => member.userId === user?.id)
-  const isOwner = myMembership?.role === 'owner'
+  const isOwner =
+    myMembership?.role === 'owner' || (!!user?.id && family?.createdBy === user.id)
   const { data: invitations = [] } = useGetFamilyInvitations(familyId || '', hasFamily && isOwner)
   const inviteMember = useInviteFamilyMember()
 

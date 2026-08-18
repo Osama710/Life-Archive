@@ -8,6 +8,70 @@ import type { Tables } from '@/lib/types/database'
 
 const supabase = createClient()
 
+function isMissingRpcError(error: { code?: string; message?: string }) {
+  return (
+    error.code === 'PGRST202' ||
+    !!error.message?.includes('Could not find the function')
+  )
+}
+
+type FamilyMemberRpcRow = {
+  id: string
+  user_id: string
+  role: FamilyMemberRow['role']
+  status: FamilyMemberRow['status']
+  joined_at: string | null
+  display_name: string | null
+}
+
+function mapFamilyMemberRpcRows(rows: FamilyMemberRpcRow[]): FamilyMemberRow[] {
+  return rows.map((row) => ({
+    id: row.id,
+    userId: row.user_id,
+    role: row.role,
+    status: row.status,
+    joinedAt: row.joined_at,
+    displayName: row.display_name?.trim() || 'Family member',
+  }))
+}
+
+async function ensureFamilyOwnerMembership(familyId: string) {
+  const { error } = await supabase.rpc('ensure_family_owner', { p_family_id: familyId })
+  if (error && !isMissingRpcError(error) && !error.message?.includes('ensure_family_owner')) {
+    throw error
+  }
+}
+
+async function fetchFamilyMembersDirect(familyId: string): Promise<FamilyMemberRow[]> {
+  const { data, error } = await supabase
+    .from('family_members')
+    .select('id, user_id, role, status, joined_at, profiles(display_name)')
+    .eq('family_id', familyId)
+    .is('removed_at', null)
+
+  if (error) throw error
+
+  return (data ?? [])
+    .filter((row) => !row.status || row.status === 'active')
+    .map((row) => {
+      const profile = row.profiles as { display_name?: string | null } | null
+      return {
+        id: row.id,
+        userId: row.user_id,
+        role: row.role,
+        status: (row.status ?? 'active') as FamilyMemberRow['status'],
+        joinedAt: row.joined_at,
+        displayName: profile?.display_name?.trim() || 'Family member',
+      }
+    })
+    .sort((a, b) => {
+      const roleOrder = { owner: 0, editor: 1, viewer: 2 } as const
+      const diff = (roleOrder[a.role] ?? 3) - (roleOrder[b.role] ?? 3)
+      if (diff !== 0) return diff
+      return (a.joinedAt ?? '').localeCompare(b.joinedAt ?? '')
+    })
+}
+
 interface CreateMemoryInput {
   familyId: string
   childId?: string
@@ -107,6 +171,21 @@ export const useCreateFamily = () => {
           throw new Error(getErrorMessage(insertError, 'Could not create family'))
         }
 
+        const { error: memberError } = await supabase.from('family_members').upsert(
+          {
+            family_id: inserted.id,
+            user_id: user.id,
+            role: 'owner',
+            status: 'active',
+            joined_at: new Date().toISOString(),
+          },
+          { onConflict: 'family_id,user_id' },
+        )
+
+        if (memberError) {
+          throw new Error(getErrorMessage(memberError, 'Could not create family membership'))
+        }
+
         return mapFamily(inserted)
       }
 
@@ -138,31 +217,24 @@ export const useGetFamilyMembers = (familyId: string, enabled = true) =>
     queryKey: ['family-members', familyId],
     enabled: enabled && !!familyId,
     queryFn: async () => {
+      await ensureFamilyOwnerMembership(familyId)
+
       const { data, error } = await supabase.rpc('get_family_members', {
         p_family_id: familyId,
       })
 
-      if (error) {
-        if (
-          error.code === 'PGRST202' ||
-          error.message.includes('get_family_members') ||
-          error.message.includes('Could not find the function')
-        ) {
-          return [] as FamilyMemberRow[]
-        }
+      if (!error && data?.length) {
+        return mapFamilyMemberRpcRows(data as FamilyMemberRpcRow[])
+      }
+
+      if (error && !isMissingRpcError(error) && !error.message?.includes('get_family_members')) {
         throw error
       }
 
-      return (data ?? []).map(
-        (row): FamilyMemberRow => ({
-          id: row.id,
-          userId: row.user_id,
-          role: row.role,
-          status: row.status,
-          joinedAt: row.joined_at,
-          displayName: row.display_name || 'Family member',
-        }),
-      )
+      const direct = await fetchFamilyMembersDirect(familyId)
+      if (direct.length > 0) return direct
+
+      return mapFamilyMemberRpcRows((data ?? []) as FamilyMemberRpcRow[])
     },
   })
 
@@ -176,12 +248,28 @@ export const useGetFamilyInvitations = (familyId: string, enabled = true) =>
       })
 
       if (error) {
-        if (
-          error.code === 'PGRST202' ||
-          error.message.includes('get_family_invitations') ||
-          error.message.includes('Could not find the function')
-        ) {
-          return [] as FamilyInvitationRow[]
+        if (isMissingRpcError(error) || error.message?.includes('get_family_invitations')) {
+          const now = new Date().toISOString()
+          const { data: direct, error: directError } = await supabase
+            .from('family_invitations')
+            .select('id, email, role, expires_at, created_at')
+            .eq('family_id', familyId)
+            .is('accepted_at', null)
+            .is('revoked_at', null)
+            .gt('expires_at', now)
+            .order('created_at', { ascending: false })
+
+          if (directError) throw directError
+
+          return (direct ?? []).map(
+            (row): FamilyInvitationRow => ({
+              id: row.id,
+              email: row.email,
+              role: row.role,
+              expiresAt: row.expires_at,
+              createdAt: row.created_at,
+            }),
+          )
         }
         throw error
       }

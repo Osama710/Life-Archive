@@ -374,6 +374,10 @@ export type Database = {
           display_name: string | null;
         }[];
       };
+      ensure_family_owner: {
+        Args: { p_family_id: string };
+        Returns: undefined;
+      };
       get_family_invitations: {
         Args: { p_family_id: string };
         Returns: {
