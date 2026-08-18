@@ -46,30 +46,56 @@ h6 {
 /* Mesh + blobs */
 .mesh-bg {
   background:
-    radial-gradient(ellipse 80% 60% at 10% 20%, rgba(139, 92, 246, 0.18), transparent 55%),
-    radial-gradient(ellipse 70% 50% at 90% 10%, rgba(255, 107, 107, 0.14), transparent 50%),
-    radial-gradient(ellipse 60% 45% at 70% 80%, rgba(52, 211, 153, 0.12), transparent 50%),
-    linear-gradient(180deg, #fdf8f3 0%, #f6f0ff 45%, #fdf8f3 100%);
+    radial-gradient(ellipse 90% 70% at 8% 18%, rgba(139, 92, 246, 0.32), transparent 58%),
+    radial-gradient(ellipse 80% 55% at 94% 12%, rgba(255, 107, 107, 0.24), transparent 52%),
+    radial-gradient(ellipse 70% 50% at 72% 88%, rgba(52, 211, 153, 0.2), transparent 52%),
+    radial-gradient(ellipse 55% 45% at 48% 42%, rgba(236, 72, 153, 0.14), transparent 62%),
+    linear-gradient(180deg, #fdf8f3 0%, #f3ebff 38%, #fff1f2 72%, #fdf8f3 100%);
+}
+
+.mesh-bg-animated {
+  animation: meshShift 20s ease-in-out infinite alternate;
+}
+
+.mesh-noise {
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 .blob {
   border-radius: 9999px;
-  filter: blur(48px);
+  filter: blur(56px);
   animation: float 8s ease-in-out infinite;
 }
 
 .blob-violet {
-  background: rgba(139, 92, 246, 0.35);
+  background: rgba(139, 92, 246, 0.45);
 }
 
 .blob-coral {
-  background: rgba(255, 107, 107, 0.28);
+  background: rgba(255, 107, 107, 0.38);
   animation-delay: -2s;
 }
 
+.blob-fuchsia {
+  background: rgba(236, 72, 153, 0.32);
+  animation-delay: -5s;
+}
+
 .blob-mint {
-  background: rgba(52, 211, 153, 0.25);
+  background: rgba(52, 211, 153, 0.34);
   animation-delay: -4s;
+}
+
+@keyframes meshShift {
+  0% {
+    filter: hue-rotate(0deg) saturate(1);
+    transform: scale(1);
+  }
+  100% {
+    filter: hue-rotate(10deg) saturate(1.12);
+    transform: scale(1.03);
+  }
 }
 
 @keyframes float {
@@ -147,7 +173,7 @@ h6 {
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.78);
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.65);
   border-radius: 1.5rem;
@@ -156,9 +182,15 @@ h6 {
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
+.glass-nav {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
 /* Cards */
 .card {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 1.25rem;
   padding: 1rem 1.125rem;
@@ -173,7 +205,7 @@ h6 {
 }
 
 .card-elevated {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.82);
   border: 1px solid rgba(255, 255, 255, 0.75);
   border-radius: 1.5rem;
   padding: 1.5rem;
@@ -273,6 +305,20 @@ h6 {
 textarea.input-field {
   resize: vertical;
   min-height: 120px;
+}
+
+select.input-field,
+.select-field {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: none;
+  cursor: pointer;
+}
+
+select.input-field::-ms-expand,
+.select-field::-ms-expand {
+  display: none;
 }
 
 .form-label {

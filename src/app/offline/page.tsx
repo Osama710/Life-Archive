@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { AppIcon } from '@/components/BrandLogo'
-import { MeshBackground } from '@/components/MeshBackground'
 
 export const metadata: Metadata = {
   title: 'Offline · Life Archive',
@@ -10,7 +9,6 @@ export const metadata: Metadata = {
 export default function OfflinePage() {
   return (
     <main className="relative flex min-h-dvh items-center justify-center p-6">
-      <MeshBackground />
       <div className="glass-card max-w-md px-8 py-12 text-center">
         <div className="mb-4 flex justify-center">
           <AppIcon size={72} />

@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AUTH_TAGLINES } from "@/lib/quotes";
-import { MeshBackground } from "@/components/MeshBackground";
 import { BrandLogo } from "@/components/BrandLogo";
 
 interface AuthShellProps {
@@ -22,7 +21,6 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
 
   return (
     <div className="relative min-h-dvh overflow-hidden">
-      <MeshBackground />
       <div className="relative mx-auto flex min-h-dvh max-w-6xl flex-col lg:flex-row">
         <motion.aside
           initial={{ opacity: 0, x: -24 }}

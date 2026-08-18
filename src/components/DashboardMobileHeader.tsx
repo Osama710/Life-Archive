@@ -10,7 +10,7 @@ interface DashboardMobileHeaderProps {
 
 export function DashboardMobileHeader({ displayName }: DashboardMobileHeaderProps) {
   return (
-    <header className="sticky top-0 z-20 border-b border-white/60 bg-cream/90 backdrop-blur-xl">
+    <header className="glass-nav sticky top-0 z-20 border-b">
       <div className="flex items-center justify-between gap-3 px-4 py-3 pt-[max(0.75rem,var(--safe-top))]">
         <AppBrandRow href="/dashboard" size={32} />
         <div className="flex items-center gap-1">

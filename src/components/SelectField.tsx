@@ -1,4 +1,5 @@
 import React from "react";
+import { ChevronDown } from "lucide-react";
 
 interface SelectFieldProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
@@ -22,16 +23,19 @@ export const SelectField: React.FC<SelectFieldProps> = ({
           {label}
         </label>
       )}
-      <select
-        id={selectId}
-        className={`input-field appearance-none bg-[length:1rem] bg-[right_1rem_center] bg-no-repeat pr-10 ${className}`}
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%231a1625' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")`,
-        }}
-        {...props}
-      >
-        {children}
-      </select>
+      <div className="relative">
+        <select
+          id={selectId}
+          className={`select-field input-field pr-11 ${className}`}
+          {...props}
+        >
+          {children}
+        </select>
+        <ChevronDown
+          className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink/45"
+          aria-hidden
+        />
+      </div>
       {hint && <p className="mt-1.5 text-xs text-ink/45">{hint}</p>}
     </div>
   );

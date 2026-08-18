@@ -65,7 +65,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       <nav
         aria-label="App navigation"
-        className="fixed inset-x-0 bottom-0 z-40 mx-auto grid max-w-lg grid-cols-5 border-t border-white/70 bg-white/90 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur-xl"
+        className="glass-nav fixed inset-x-0 bottom-0 z-40 mx-auto grid max-w-lg grid-cols-5 border-t px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2"
       >
         {mobileNavigation.map(({ label, href, icon: Icon, className }) => {
           const active = isActive(pathname, href);

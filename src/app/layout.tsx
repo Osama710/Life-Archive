@@ -65,14 +65,16 @@ export default function RootLayout({
         <meta name="theme-color" content="#FDF8F3" />
         <meta name="apple-mobile-web-app-title" content={BRAND.name} />
       </head>
-      <body className="min-h-dvh bg-cream font-sans text-ink antialiased">
+      <body className="min-h-dvh font-sans text-ink antialiased">
         <MeshBackground />
-        <QueryProvider>
-          <AuthProvider>
-            <FamilyProvider>{children}</FamilyProvider>
-          </AuthProvider>
-        </QueryProvider>
-        <PwaInstallPrompt />
+        <div className="relative z-10 min-h-dvh">
+          <QueryProvider>
+            <AuthProvider>
+              <FamilyProvider>{children}</FamilyProvider>
+            </AuthProvider>
+          </QueryProvider>
+          <PwaInstallPrompt />
+        </div>
         <Script id="register-sw" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {
