@@ -23,33 +23,10 @@ function AcceptInviteInner() {
     setPending(true)
     setError('')
     try {
-      const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token))
-      const hash = Array.from(new Uint8Array(digest))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('')
-      const { data: invite, error: inviteError } = await supabase
-        .from('family_invitations')
-        .select('*')
-        .eq('token_hash', hash)
-        .is('accepted_at', null)
-        .is('revoked_at', null)
-        .gt('expires_at', new Date().toISOString())
-        .maybeSingle()
-      if (inviteError || !invite) throw new Error(inviteError?.message || 'Invite not found')
-
-      const { error: memberError } = await supabase.from('family_members').insert({
-        family_id: invite.family_id,
-        user_id: user.id,
-        role: invite.role,
-        status: 'active',
+      const { error: rpcError } = await supabase.rpc('accept_family_invitation', {
+        p_token: token,
       })
-      if (memberError) throw new Error(memberError.message)
-
-      await supabase
-        .from('family_invitations')
-        .update({ accepted_at: new Date().toISOString() })
-        .eq('id', invite.id)
-
+      if (rpcError) throw new Error(rpcError.message)
       router.replace('/dashboard')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not accept invite')

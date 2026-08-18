@@ -351,6 +351,10 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      accept_family_invitation: {
+        Args: { p_token: string };
+        Returns: string;
+      };
       has_family_role: {
         Args: { target_family_id: string; allowed_roles: FamilyRole[] };
         Returns: boolean;
