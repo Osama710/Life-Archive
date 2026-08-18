@@ -268,13 +268,41 @@ export const useCreateMemory = () => {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (memory: CreateMemoryInput) => {
-      const { data, error } = await supabase
+      const { data, error } = await supabase.rpc('create_memory', {
+        p_family_id: memory.familyId,
+        p_title: memory.title.trim(),
+        p_description: memory.description ?? null,
+        p_memory_date: memory.memoryDate,
+        p_memory_time: memory.memoryTime ?? null,
+        p_location: memory.location ?? null,
+        p_mood: memory.mood ?? null,
+        p_child_id: memory.childId ?? null,
+        p_milestone_id: memory.milestoneId ?? null,
+        p_status: memory.status ?? 'published',
+        p_is_favorite: memory.isFavorite ?? false,
+        p_is_private: memory.isPrivate ?? true,
+      })
+
+      if (!error && data) {
+        return mapMemory(data)
+      }
+
+      if (
+        error &&
+        error.code !== 'PGRST202' &&
+        !error.message.includes('create_memory') &&
+        !error.message.includes('Could not find the function')
+      ) {
+        throw new Error(getErrorMessage(error, 'Could not create memory'))
+      }
+
+      const { data: inserted, error: insertError } = await supabase
         .from('memories')
         .insert({
           family_id: memory.familyId,
           child_id: memory.childId,
           milestone_id: memory.milestoneId,
-          title: memory.title,
+          title: memory.title.trim(),
           description: memory.description,
           memory_date: memory.memoryDate,
           memory_time: memory.memoryTime,
@@ -285,10 +313,14 @@ export const useCreateMemory = () => {
           is_private: memory.isPrivate ?? true,
           created_by: memory.createdBy,
         })
-        .select('*, memory_media(*)')
+        .select('*')
         .single()
-      if (error) throw error
-      return mapMemory(data)
+
+      if (insertError) {
+        throw new Error(getErrorMessage(insertError, 'Could not create memory'))
+      }
+
+      return mapMemory(inserted)
     },
     onSuccess: (data) =>
       queryClient.invalidateQueries({ queryKey: ['memories', data.familyId] }),

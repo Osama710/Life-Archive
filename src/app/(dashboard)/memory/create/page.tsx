@@ -14,6 +14,7 @@ import { Input } from '@/components/Input'
 import { TextareaField } from '@/components/TextareaField'
 import { SelectField } from '@/components/SelectField'
 import { Button } from '@/components/Button'
+import { getErrorMessage } from '@/lib/errors'
 
 const TEMPLATES = [
   { id: 'first-smile', icon: '😊', title: 'First Smile' },
@@ -121,7 +122,7 @@ export default function MemoryCreatePage() {
       if (file) await uploadMedia(memory.id, file)
       router.push(`/dashboard/memory/${memory.id}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save memory')
+      setError(getErrorMessage(err, 'Could not save memory'))
     }
   }
 

@@ -22,6 +22,25 @@ export async function POST(request: Request) {
     height?: number
   }
 
+  const { data: rpcData, error: rpcError } = await supabase.rpc('attach_memory_media', {
+    p_memory_id: body.memoryId,
+    p_media_type: body.mediaType,
+    p_provider: 'cloudinary',
+    p_provider_asset_id: body.providerAssetId,
+    p_url: body.url,
+    p_secure_url: body.secureUrl,
+    p_thumbnail_url: body.thumbnailUrl ?? body.secureUrl,
+    p_file_name: body.fileName ?? null,
+    p_mime_type: body.mimeType ?? null,
+    p_bytes: body.bytes ?? null,
+    p_width: body.width ?? null,
+    p_height: body.height ?? null,
+  })
+
+  if (!rpcError && rpcData) {
+    return NextResponse.json(rpcData)
+  }
+
   const { data, error } = await supabase
     .from('memory_media')
     .insert({
@@ -41,6 +60,12 @@ export async function POST(request: Request) {
     .select()
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  if (error) {
+    return NextResponse.json(
+      { error: rpcError?.message || error.message },
+      { status: 400 },
+    )
+  }
+
   return NextResponse.json(data)
 }

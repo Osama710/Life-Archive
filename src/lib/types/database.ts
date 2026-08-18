@@ -383,6 +383,40 @@ export type Database = {
         };
         Returns: Tables<"memories">[];
       };
+      create_memory: {
+        Args: {
+          p_family_id: string;
+          p_title: string;
+          p_description?: string | null;
+          p_memory_date?: string;
+          p_memory_time?: string | null;
+          p_location?: string | null;
+          p_mood?: string | null;
+          p_child_id?: string | null;
+          p_milestone_id?: string | null;
+          p_status?: MemoryStatus;
+          p_is_favorite?: boolean;
+          p_is_private?: boolean;
+        };
+        Returns: Tables<"memories">;
+      };
+      attach_memory_media: {
+        Args: {
+          p_memory_id: string;
+          p_media_type?: MediaType;
+          p_provider?: string | null;
+          p_provider_asset_id?: string | null;
+          p_url?: string | null;
+          p_secure_url?: string | null;
+          p_thumbnail_url?: string | null;
+          p_file_name?: string | null;
+          p_mime_type?: string | null;
+          p_bytes?: number | null;
+          p_width?: number | null;
+          p_height?: number | null;
+        };
+        Returns: Tables<"memory_media">;
+      };
       has_family_role: {
         Args: { target_family_id: string; allowed_roles: FamilyRole[] };
         Returns: boolean;
