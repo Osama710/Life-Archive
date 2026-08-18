@@ -22,7 +22,7 @@ export default function DashboardHomePage() {
       <PageMotion className="space-y-6">
         <PageHeader
           showBrand
-          title={`Hey ${firstName} 👋`}
+          title={`Hey ${firstName}`}
           subtitle="Set up your family archive, then everything below unlocks."
         />
         <EmptyState
@@ -33,7 +33,7 @@ export default function DashboardHomePage() {
           href="/onboarding"
         />
         <section>
-          <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-ink/45">
+          <h2 className="mb-3 px-1 text-xs font-semibold uppercase tracking-widest text-ink/40">
             What you will get
           </h2>
           <AppFeatureGrid compact />
@@ -46,33 +46,33 @@ export default function DashboardHomePage() {
     <PageMotion className="space-y-8">
       <PageHeader
         eyebrow={family?.name || 'Your archive'}
-        title={`Hey ${firstName} 👋`}
-        subtitle="Tap anything below — this is your app menu."
+        title={`Hey ${firstName}`}
+        subtitle="Your shortcuts to everything in the app."
       />
 
       <section>
         <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="font-display text-lg font-bold text-ink">Everything in the app</h2>
-          <Link href="/dashboard/more" className="text-sm font-semibold text-primary">
-            See all
+          <h2 className="font-display text-base font-semibold text-ink">Quick access</h2>
+          <Link href="/dashboard/more" className="text-sm font-medium text-primary">
+            Explore all
           </Link>
         </div>
         <AppFeatureGrid compact />
       </section>
 
       {children.length > 0 && (
-        <section className="glass-card p-5">
-          <h2 className="mb-3 font-display text-lg font-bold">Your child</h2>
+        <section className="surface-card p-5">
+          <h2 className="mb-3 font-display text-base font-semibold text-ink">Active child</h2>
           <div className="flex flex-wrap gap-2">
             {children.map((c) => (
               <button
                 key={c.id}
                 type="button"
                 onClick={() => setChildId(c.id)}
-                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all ${
+                className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                   child?.id === c.id
-                    ? 'border-primary/30 bg-linear-to-r from-violet-500/15 to-fuchsia-500/10 text-primary shadow-soft'
-                    : 'border-ink/10 bg-white/80 text-ink/70'
+                    ? 'bg-ink text-white shadow-soft'
+                    : 'border border-ink/8 bg-white text-ink/65 hover:border-ink/15'
                 }`}
               >
                 {c.name}

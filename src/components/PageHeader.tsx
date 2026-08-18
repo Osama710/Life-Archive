@@ -8,7 +8,6 @@ interface PageHeaderProps {
   title: string;
   subtitle?: string;
   action?: React.ReactNode;
-  /** Show app icon + name above the page title (desktop home/settings hero) */
   showBrand?: boolean;
 }
 
@@ -21,37 +20,27 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <motion.header
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="relative mb-8 flex flex-wrap items-end justify-between gap-4"
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      className="mb-7 flex flex-wrap items-end justify-between gap-4"
     >
-      <div
-        className="pointer-events-none absolute -left-6 -top-8 size-32 rounded-full bg-violet-400/10 blur-3xl"
-        aria-hidden="true"
-      />
-      <div
-        className="pointer-events-none absolute -right-4 top-0 size-24 rounded-full bg-accent/8 blur-3xl"
-        aria-hidden="true"
-      />
-      <div className="relative">
+      <div>
         {showBrand && (
           <div className="mb-4 hidden lg:block">
             <AppBrandRow size={44} showTagline />
           </div>
         )}
         {eyebrow && (
-          <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-primary/80">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-ink/45">
             {eyebrow}
           </p>
         )}
-        <h1 className="font-display text-4xl font-bold tracking-tight text-ink sm:text-5xl">
+        <h1 className="font-display text-[2rem] font-bold leading-tight tracking-tight text-ink sm:text-4xl">
           {title}
         </h1>
         {subtitle && (
-          <p className="mt-2 max-w-2xl text-lg leading-relaxed text-ink/60">
-            {subtitle}
-          </p>
+          <p className="mt-2 max-w-md text-base leading-relaxed text-ink/55">{subtitle}</p>
         )}
       </div>
       {action && <div className="shrink-0">{action}</div>}

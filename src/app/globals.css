@@ -139,119 +139,61 @@ h6 {
   color: transparent;
 }
 
-/* Glass + chrome — cream-tinted, not stark white */
-.glass {
-  background: rgba(253, 248, 243, 0.68);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(26, 22, 37, 0.06);
-}
-
-.glass-chrome {
-  background: rgba(253, 248, 243, 0.72);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+/* Surfaces — solid, clean, no see-through chrome */
+.app-chrome {
+  background: var(--cream);
   border-color: rgba(26, 22, 37, 0.06);
 }
 
 .glass-card,
-.genz-panel {
+.surface-card {
   position: relative;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.84);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(26, 22, 37, 0.07);
-  border-radius: 1.375rem;
+  background: #ffffff;
+  border: 1px solid rgba(26, 22, 37, 0.06);
+  border-radius: 1.25rem;
   box-shadow:
-    0 2px 16px rgba(26, 22, 37, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.85);
-}
-
-.glass-card::before,
-.genz-panel::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto auto 0;
-  height: 3px;
-  width: 100%;
-  background: linear-gradient(90deg, #7c3aed, #ec4899, #ff6b6b, #34d399);
-  opacity: 0.32;
-}
-
-.genz-sticker {
-  position: absolute;
-  top: 0.6rem;
-  right: 0.7rem;
-  font-size: 1.25rem;
-  line-height: 1;
-  opacity: 0.28;
-  pointer-events: none;
-  transform: rotate(7deg);
-  user-select: none;
-}
-
-.genz-cut-corner {
-  border-radius: 1.25rem 1.65rem 1.25rem 1.65rem;
-}
-
-/* Bottom nav dock */
-.bottom-nav-bar {
-  background: rgba(253, 248, 243, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(26, 22, 37, 0.08);
-  box-shadow:
-    0 -2px 24px rgba(26, 22, 37, 0.06),
+    0 1px 2px rgba(26, 22, 37, 0.04),
     0 8px 24px rgba(26, 22, 37, 0.04);
 }
 
-.bottom-nav-notch {
-  background: rgba(253, 248, 243, 0.88);
-  border: 1px solid rgba(26, 22, 37, 0.08);
-  border-bottom-color: transparent;
-  box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.6);
-}
-
-.bottom-nav-fab::after {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  border-radius: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  pointer-events: none;
+.glass {
+  background: #ffffff;
+  border: 1px solid rgba(26, 22, 37, 0.06);
 }
 
 /* Cards */
 .card {
-  position: relative;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.86);
-  border: 1px solid rgba(26, 22, 37, 0.07);
-  border-radius: 1.25rem 1.45rem 1.25rem 1.45rem;
+  background: #ffffff;
+  border: 1px solid rgba(26, 22, 37, 0.06);
+  border-radius: 1.25rem;
   padding: 1rem 1.125rem;
-  box-shadow: 0 2px 12px rgba(26, 22, 37, 0.04);
-  transition: all 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 1px 2px rgba(26, 22, 37, 0.04);
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms ease;
 }
 
 .card:hover {
-  box-shadow: 0 12px 28px rgba(124, 58, 237, 0.1);
-  transform: translateY(-3px);
-  border-color: rgba(124, 58, 237, 0.15);
+  box-shadow: 0 8px 28px rgba(26, 22, 37, 0.08);
+  transform: translateY(-2px);
+  border-color: rgba(26, 22, 37, 0.1);
 }
 
 .card-elevated {
-  position: relative;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(26, 22, 37, 0.07);
-  border-radius: 1.35rem 1.65rem 1.35rem 1.65rem;
+  background: #ffffff;
+  border: 1px solid rgba(26, 22, 37, 0.06);
+  border-radius: 1.25rem;
   padding: 1.5rem;
-  box-shadow: 0 6px 24px rgba(26, 22, 37, 0.05);
-  transition: all 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 4px 20px rgba(26, 22, 37, 0.06);
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .card-elevated:hover {
-  box-shadow: 0 16px 40px rgba(124, 58, 237, 0.12);
-  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(26, 22, 37, 0.08);
+  transform: translateY(-2px);
 }
 
 /* Buttons */

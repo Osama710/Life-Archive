@@ -9,7 +9,7 @@ export default function MorePage() {
     <PageMotion>
       <PageHeader
         title="Explore"
-        subtitle="Every screen in Life Archive — tap to open."
+        subtitle="Every screen in your archive."
       />
 
       <AppFeatureGrid />

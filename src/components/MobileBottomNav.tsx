@@ -20,11 +20,12 @@ const mobileNavigation: {
   label: string;
   href: string;
   icon: LucideIcon;
+  col: string;
 }[] = [
-  { label: "Home", href: "/dashboard", icon: Home },
-  { label: "Timeline", href: "/dashboard/timeline", icon: BookOpen },
-  { label: "Explore", href: "/dashboard/more", icon: Compass },
-  { label: "You", href: "/dashboard/settings", icon: Settings },
+  { label: "Home", href: "/dashboard", icon: Home, col: "col-start-1" },
+  { label: "Timeline", href: "/dashboard/timeline", icon: BookOpen, col: "col-start-2" },
+  { label: "Explore", href: "/dashboard/more", icon: Compass, col: "col-start-4" },
+  { label: "You", href: "/dashboard/settings", icon: Settings, col: "col-start-5" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -41,6 +42,48 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
+function NavItem({
+  label,
+  href,
+  icon: Icon,
+  active,
+  className,
+}: {
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  active: boolean;
+  className: string;
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={`${className} flex min-h-[3.25rem] flex-col items-center justify-end gap-1 px-1 pb-1.5 pt-2 transition-colors`}
+    >
+      <Icon
+        aria-hidden="true"
+        size={22}
+        strokeWidth={active ? 2.25 : 1.75}
+        className={active ? "text-ink" : "text-ink/35"}
+      />
+      <span
+        className={`text-[10px] font-medium tracking-tight ${
+          active ? "text-ink" : "text-ink/40"
+        }`}
+      >
+        {label}
+      </span>
+      <span
+        aria-hidden="true"
+        className={`h-0.5 rounded-full transition-all duration-200 ${
+          active ? "w-5 bg-primary" : "w-0 bg-transparent"
+        }`}
+      />
+    </Link>
+  );
+}
+
 interface MobileBottomNavProps {
   fabHref: string;
   fabLabel: string;
@@ -48,69 +91,34 @@ interface MobileBottomNavProps {
 
 export function MobileBottomNav({ fabHref, fabLabel }: MobileBottomNavProps) {
   const pathname = usePathname();
-  const leftItems = mobileNavigation.slice(0, 2);
-  const rightItems = mobileNavigation.slice(2);
 
   return (
-    <div className="bottom-nav-shell fixed inset-x-0 bottom-0 z-40 mx-auto max-w-lg px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))]">
-      <div className="relative">
-        <Link
-          href={fabHref}
-          aria-label={fabLabel}
-          className="bottom-nav-fab absolute left-1/2 top-0 z-30 flex size-[3.35rem] -translate-x-1/2 -translate-y-[42%] items-center justify-center rounded-full bg-gradient-brand text-white shadow-[0_10px_28px_rgba(124,58,237,0.35)] ring-[5px] ring-cream/95 transition active:scale-95"
-        >
-          <Plus aria-hidden="true" size={24} strokeWidth={2.75} />
-        </Link>
-
-        <nav
-          aria-label="App navigation"
-          className="bottom-nav-bar relative overflow-visible rounded-[1.65rem] px-1 pb-1.5 pt-4"
-        >
-          <div
-            className="bottom-nav-notch pointer-events-none absolute left-1/2 top-0 z-10 h-[1.65rem] w-[4.75rem] -translate-x-1/2 -translate-y-[38%] rounded-full"
-            aria-hidden="true"
+    <nav
+      aria-label="App navigation"
+      className="app-chrome fixed inset-x-0 bottom-0 z-40 border-t shadow-[0_-4px_24px_rgba(26,22,37,0.04)]"
+    >
+      <div className="relative mx-auto grid max-w-lg grid-cols-5 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
+        {mobileNavigation.map(({ label, href, icon, col }) => (
+          <NavItem
+            key={href}
+            label={label}
+            href={href}
+            icon={icon}
+            active={isActive(pathname, href)}
+            className={col}
           />
+        ))}
 
-          <div className="grid grid-cols-4 items-end">
-            {leftItems.map(({ label, href, icon: Icon }) => {
-              const active = isActive(pathname, href);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  aria-current={active ? "page" : undefined}
-                  className={`bottom-nav-item flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1 text-[10px] font-semibold transition ${
-                    active
-                      ? "bg-primary/10 text-primary"
-                      : "text-ink/45 hover:text-ink/70"
-                  }`}
-                >
-                  <Icon aria-hidden="true" size={20} strokeWidth={active ? 2.5 : 2} />
-                  {label}
-                </Link>
-              );
-            })}
-            {rightItems.map(({ label, href, icon: Icon }) => {
-              const active = isActive(pathname, href);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  aria-current={active ? "page" : undefined}
-                  className={`bottom-nav-item flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1 text-[10px] font-semibold transition ${
-                    active
-                      ? "bg-primary/10 text-primary"
-                      : "text-ink/45 hover:text-ink/70"
-                  }`}
-                >
-                  <Icon aria-hidden="true" size={20} strokeWidth={active ? 2.5 : 2} />
-                  {label}
-                </Link>
-              );
-            })}
-          </div>
-        </nav>
+        <div className="col-start-3 flex items-end justify-center pb-1">
+          <Link
+            href={fabHref}
+            aria-label={fabLabel}
+            className="flex size-[3.25rem] -translate-y-3 items-center justify-center rounded-full bg-gradient-brand text-white shadow-lift transition active:scale-95"
+          >
+            <Plus aria-hidden="true" size={24} strokeWidth={2.5} />
+          </Link>
+        </div>
       </div>
-    </div>
+    </nav>
   );
 }

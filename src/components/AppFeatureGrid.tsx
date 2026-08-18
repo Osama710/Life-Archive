@@ -1,58 +1,63 @@
 'use client'
 
 import Link from 'next/link'
+import { ChevronRight } from 'lucide-react'
 import type { AppFeature } from '@/lib/appFeatures'
-import { APP_FEATURE_SECTIONS, APP_FEATURES } from '@/lib/appFeatures'
+import { APP_FEATURE_SECTIONS, APP_FEATURES, FEATURE_ACCENT_CLASS } from '@/lib/appFeatures'
 
-function StatusBadge({ feature }: { feature: AppFeature }) {
-  if (feature.status === 'ready') {
-    return <span className="badge badge-success shrink-0">Ready</span>
-  }
-  return <span className="badge shrink-0">Partial</span>
-}
-
-function FeatureCard({ feature, compact = false }: { feature: AppFeature; compact?: boolean }) {
+function FeatureTile({ feature }: { feature: AppFeature }) {
   const Icon = feature.icon
+  const accent = FEATURE_ACCENT_CLASS[feature.accent]
 
   return (
     <Link
       href={feature.href}
-      className={`glass-card genz-cut-corner block transition active:scale-[0.98] ${
-        compact ? 'p-4 text-center' : 'flex items-start gap-4 p-4'
-      }`}
+      className="surface-card group flex flex-col gap-3 p-4 transition active:scale-[0.98]"
     >
-      <span className="genz-sticker" aria-hidden="true">
-        {feature.emoji}
-      </span>
-      {compact ? (
-        <>
-          <span className="mb-2 block text-2xl" aria-hidden="true">
-            {feature.emoji}
-          </span>
-          <p className="font-display text-sm font-bold text-ink">{feature.title}</p>
+      <div
+        className={`flex size-11 items-center justify-center rounded-2xl ${accent} transition group-active:scale-95`}
+      >
+        <Icon size={22} strokeWidth={2} aria-hidden="true" />
+      </div>
+      <div className="min-w-0">
+        <p className="font-display text-sm font-semibold leading-snug text-ink">{feature.title}</p>
+        <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-ink/45">{feature.description}</p>
+      </div>
+    </Link>
+  )
+}
+
+function FeatureRow({ feature }: { feature: AppFeature }) {
+  const Icon = feature.icon
+  const accent = FEATURE_ACCENT_CLASS[feature.accent]
+
+  return (
+    <Link
+      href={feature.href}
+      className="surface-card group flex items-center gap-3 p-4 transition active:scale-[0.99]"
+    >
+      <div className={`flex size-11 shrink-0 items-center justify-center rounded-2xl ${accent}`}>
+        <Icon size={21} strokeWidth={2} aria-hidden="true" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <h3 className="font-display text-base font-semibold text-ink">{feature.title}</h3>
           {feature.status === 'partial' && (
-            <p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-ink/40">
-              Partial
-            </p>
+            <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+              Beta
+            </span>
           )}
-        </>
-      ) : (
-        <>
-          <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-linear-to-br from-violet-500/15 to-fuchsia-500/10 text-primary">
-            <Icon size={22} aria-hidden="true" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start justify-between gap-2">
-              <h3 className="font-display text-base font-bold text-ink">{feature.title}</h3>
-              <StatusBadge feature={feature} />
-            </div>
-            <p className="mt-1 text-sm leading-relaxed text-ink/55">{feature.description}</p>
-            {feature.statusNote && (
-              <p className="mt-2 text-xs font-medium text-amber-700/80">{feature.statusNote}</p>
-            )}
-          </div>
-        </>
-      )}
+        </div>
+        <p className="mt-0.5 text-sm leading-relaxed text-ink/50">{feature.description}</p>
+        {feature.statusNote && (
+          <p className="mt-1.5 text-xs text-ink/40">{feature.statusNote}</p>
+        )}
+      </div>
+      <ChevronRight
+        size={18}
+        className="shrink-0 text-ink/25 transition group-hover:text-ink/45"
+        aria-hidden="true"
+      />
     </Link>
   )
 }
@@ -60,9 +65,9 @@ function FeatureCard({ feature, compact = false }: { feature: AppFeature; compac
 export function AppFeatureGrid({ compact = false }: { compact?: boolean }) {
   if (compact) {
     return (
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-3">
         {APP_FEATURES.filter((f) => f.section !== 'account').map((feature) => (
-          <FeatureCard key={feature.href} feature={feature} compact />
+          <FeatureTile key={feature.href} feature={feature} />
         ))}
       </div>
     )
@@ -76,12 +81,12 @@ export function AppFeatureGrid({ compact = false }: { compact?: boolean }) {
 
         return (
           <section key={section.id}>
-            <h2 className="mb-3 font-display text-sm font-bold uppercase tracking-wide text-ink/45">
+            <h2 className="mb-3 px-1 text-xs font-semibold uppercase tracking-widest text-ink/40">
               {section.label}
             </h2>
             <div className="space-y-2">
               {items.map((feature) => (
-                <FeatureCard key={feature.href} feature={feature} />
+                <FeatureRow key={feature.href} feature={feature} />
               ))}
             </div>
           </section>
@@ -93,12 +98,12 @@ export function AppFeatureGrid({ compact = false }: { compact?: boolean }) {
 
 export function AppComingSoonNote() {
   return (
-    <section className="glass-card genz-cut-corner border border-dashed border-ink/10 bg-white/50 p-4">
-      <h3 className="font-display text-sm font-bold text-ink/70">Not in the app yet</h3>
-      <ul className="mt-2 space-y-1 text-sm text-ink/50">
-        <li>· Push notifications</li>
-        <li>· Read sealed Letters early</li>
-        <li>· Offline saving</li>
+    <section className="rounded-2xl border border-ink/5 bg-white/80 px-4 py-4">
+      <p className="text-xs font-semibold uppercase tracking-widest text-ink/40">Coming soon</p>
+      <ul className="mt-2 space-y-1.5 text-sm text-ink/55">
+        <li>Push notifications</li>
+        <li>Read sealed letters early</li>
+        <li>Offline saving</li>
       </ul>
     </section>
   )
