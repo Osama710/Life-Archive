@@ -27,11 +27,11 @@ export function PageHeader({
       className="relative mb-8 flex flex-wrap items-end justify-between gap-4"
     >
       <div
-        className="pointer-events-none absolute -left-6 -top-8 size-36 rounded-full bg-violet-400/20 blur-3xl"
+        className="pointer-events-none absolute -left-6 -top-8 size-32 rounded-full bg-violet-400/10 blur-3xl"
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute -right-4 top-0 size-28 rounded-full bg-accent/15 blur-3xl"
+        className="pointer-events-none absolute -right-4 top-0 size-24 rounded-full bg-accent/8 blur-3xl"
         aria-hidden="true"
       />
       <div className="relative">
@@ -45,8 +45,8 @@ export function PageHeader({
             {eyebrow}
           </p>
         )}
-        <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
-          <span className="gradient-text">{title}</span>
+        <h1 className="font-display text-4xl font-bold tracking-tight text-ink sm:text-5xl">
+          {title}
         </h1>
         {subtitle && (
           <p className="mt-2 max-w-2xl text-lg leading-relaxed text-ink/60">
