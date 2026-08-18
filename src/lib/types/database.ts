@@ -417,6 +417,10 @@ export type Database = {
         };
         Returns: Tables<"memory_media">;
       };
+      get_memory_for_upload: {
+        Args: { p_memory_id: string };
+        Returns: { id: string; family_id: string }[];
+      };
       has_family_role: {
         Args: { target_family_id: string; allowed_roles: FamilyRole[] };
         Returns: boolean;

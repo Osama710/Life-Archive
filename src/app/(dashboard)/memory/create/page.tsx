@@ -107,19 +107,38 @@ export default function MemoryCreatePage() {
         .filter(([, answer]) => answer.trim())
         .map(([prompt, answer]) => `${prompt}\n${answer}`)
         .join('\n\n')
-      const memory = await create.mutateAsync({
-        familyId,
-        childId: childId || undefined,
-        title: title.trim(),
-        description: [desc, promptText].filter(Boolean).join('\n\n') || undefined,
-        memoryDate: date,
-        mood,
-        location: location || undefined,
-        isFavorite: false,
-        isPrivate: true,
-        createdBy: user.id,
-      })
-      if (file) await uploadMedia(memory.id, file)
+
+      let memory
+      try {
+        memory = await create.mutateAsync({
+          familyId,
+          childId: childId || undefined,
+          title: title.trim(),
+          description: [desc, promptText].filter(Boolean).join('\n\n') || undefined,
+          memoryDate: date,
+          mood,
+          location: location || undefined,
+          isFavorite: false,
+          isPrivate: true,
+          createdBy: user.id,
+        })
+      } catch (err) {
+        setError(`Could not save memory: ${getErrorMessage(err, 'Unknown error')}`)
+        return
+      }
+
+      if (file) {
+        try {
+          await uploadMedia(memory.id, file)
+        } catch (err) {
+          setError(
+            `Memory saved, but photo upload failed: ${getErrorMessage(err, 'Unknown error')}. You can open the memory and try adding media again later.`,
+          )
+          router.push(`/dashboard/memory/${memory.id}`)
+          return
+        }
+      }
+
       router.push(`/dashboard/memory/${memory.id}`)
     } catch (err) {
       setError(getErrorMessage(err, 'Could not save memory'))
