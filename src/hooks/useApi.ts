@@ -189,20 +189,46 @@ export const useCreateChild = () => {
   })
 }
 
-export const useGetMemories = (familyId: string, limit = 20, offset = 0) =>
+export const useGetMemories = (
+  familyId: string,
+  limit = 20,
+  offset = 0,
+  enabled = true,
+) =>
   useQuery({
     queryKey: ['memories', familyId, offset],
-    enabled: !!familyId,
+    enabled: enabled && !!familyId,
     queryFn: async () => {
-      const { data, error, count } = await supabase
+      const base = () =>
+        supabase
+          .from('memories')
+          .select('*', { count: 'exact' })
+          .eq('family_id', familyId)
+          .is('deleted_at', null)
+          .order('memory_date', { ascending: false })
+          .range(offset, offset + limit - 1)
+
+      const withMedia = await supabase
         .from('memories')
         .select('*, memory_media(*)', { count: 'exact' })
         .eq('family_id', familyId)
         .is('deleted_at', null)
         .order('memory_date', { ascending: false })
         .range(offset, offset + limit - 1)
-      if (error) throw error
-      return { memories: data.map((row) => mapMemory(row)), total: count || 0 }
+
+      const result =
+        withMedia.error &&
+        (withMedia.error.code === 'PGRST200' ||
+          withMedia.error.message.includes('memory_media') ||
+          withMedia.error.message.includes('relationship'))
+          ? await base()
+          : withMedia
+
+      if (result.error) throw result.error
+      return {
+        memories: (result.data ?? []).map((row) => mapMemory(row)),
+        total: result.count || 0,
+      }
     },
   })
 

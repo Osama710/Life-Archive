@@ -29,7 +29,7 @@ const MOODS = ['😊', '😄', '😍', '😢', '🤔', '🥹', '🔥', '✨']
 export default function MemoryCreatePage() {
   const router = useRouter()
   const { user } = useAuth()
-  const { familyId, childId, children, setChildId } = useFamily()
+  const { familyId, hasFamily, childId, children, setChildId } = useFamily()
   const create = useCreateMemory()
   const [step, setStep] = useState(0)
   const [templateId, setTemplateId] = useState('custom')
@@ -125,7 +125,7 @@ export default function MemoryCreatePage() {
     }
   }
 
-  if (!familyId) {
+  if (!hasFamily) {
     return (
       <PageMotion className="mx-auto max-w-lg">
         <EmptyState

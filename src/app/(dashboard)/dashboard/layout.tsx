@@ -14,6 +14,7 @@ import {
   Users,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useFamily } from "@/context/FamilyContext";
 import { useDisplayName } from "@/hooks/useDisplayName";
 import { DashboardPageTransition } from "@/components/DashboardPageTransition";
 import { DashboardMobileHeader } from "@/components/DashboardMobileHeader";
@@ -43,7 +44,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
+  const { family, isLoading: familyLoading } = useFamily();
   const { displayName, initials } = useDisplayName();
+  const needsSetup = !familyLoading && !family;
+  const fabHref = needsSetup ? "/onboarding" : "/dashboard/memory/create";
+  const fabLabel = needsSetup ? "Set up family archive" : "Add memory";
 
   const handleSignOut = async () => {
     await signOut();
@@ -140,8 +145,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           );
         })}
         <Link
-          href="/dashboard/memory/create"
-          aria-label="Add memory"
+          href={fabHref}
+          aria-label={fabLabel}
           className="absolute left-1/2 top-0 flex size-14 -translate-x-1/2 -translate-y-5 items-center justify-center rounded-full bg-gradient-brand text-white shadow-lift ring-4 ring-cream"
         >
           <Plus aria-hidden="true" size={26} />

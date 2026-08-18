@@ -10,34 +10,35 @@ import { PageMotion, StaggerItem, StaggerList } from '@/components/PageMotion'
 import { EMPTY_TIMELINE } from '@/lib/quotes'
 
 export default function TimelinePage() {
-  const { familyId, family, isLoading: familyLoading } = useFamily()
-  const { data, isLoading, isError } = useGetMemories(familyId || '', 20, 0)
+  const { familyId, family, isLoading: familyLoading, hasFamily } = useFamily()
+  const {
+    data,
+    isLoading: memoriesLoading,
+    isError,
+    refetch,
+  } = useGetMemories(familyId || '', 20, 0, hasFamily)
   const memories = data?.memories || []
 
-  if (familyLoading || isLoading) {
-    return <Loader label="Loading timeline" />
+  if (familyLoading) {
+    return <Loader label="Loading timeline" message="Checking your family archive…" />
   }
 
-  if (!familyId) {
+  if (!hasFamily) {
     return (
       <PageMotion>
         <EmptyState
           emoji="🏡"
           title="Your archive needs a home base"
           subtitle="Set up your family space first — name it, add your people, then the timeline gets spicy."
-          cta="Start onboarding"
+          cta="Create family archive"
           href="/onboarding"
         />
       </PageMotion>
     )
   }
 
-  if (isError) {
-    return (
-      <p className="alert alert-error" role="alert">
-        Could not load memories. The vibes are off — try again?
-      </p>
-    )
+  if (memoriesLoading && !data) {
+    return <Loader label="Loading timeline" message="Fetching your memories…" />
   }
 
   return (
@@ -48,18 +49,35 @@ export default function TimelinePage() {
         subtitle="Every moment, chronologically unbothered."
       />
 
+      {isError && (
+        <div className="alert alert-error mb-6 flex flex-wrap items-center justify-between gap-3" role="alert">
+          <span>Could not load memories right now.</span>
+          <button type="button" className="btn btn-secondary" onClick={() => refetch()}>
+            Try again
+          </button>
+        </div>
+      )}
+
       <div className="mb-8">
         <Link href="/dashboard/memory/create" className="btn btn-primary">
           + New memory
         </Link>
       </div>
 
-      {memories.length === 0 ? (
+      {!isError && memories.length === 0 ? (
         <EmptyState
           emoji={EMPTY_TIMELINE.emoji}
           title={EMPTY_TIMELINE.title}
           subtitle={EMPTY_TIMELINE.subtitle}
           cta={EMPTY_TIMELINE.cta}
+          href="/dashboard/memory/create"
+        />
+      ) : isError ? (
+        <EmptyState
+          emoji="📡"
+          title="Timeline unavailable for a sec"
+          subtitle="Your family archive is set up — we just couldn't load memories. Tap try again above."
+          cta="Add memory anyway"
           href="/dashboard/memory/create"
         />
       ) : (

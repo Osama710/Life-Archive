@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useFamily } from '@/context/FamilyContext'
 import { createClient } from '@/lib/supabase/client'
@@ -13,7 +14,7 @@ import { SelectField } from '@/components/SelectField'
 const supabase = createClient()
 
 export default function FamilyPage() {
-  const { family, familyId, families, setFamilyId } = useFamily()
+  const { family, familyId, families, setFamilyId, hasFamily, isLoading } = useFamily()
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'editor' | 'viewer'>('editor')
   const [message, setMessage] = useState('')
@@ -67,7 +68,19 @@ export default function FamilyPage() {
         subtitle="Invite your people. Owner, editor, viewer — everyone gets a role."
       />
 
-      {families.length > 1 && (
+      {!isLoading && !hasFamily && (
+        <section className="glass-card space-y-4 p-6">
+          <h2 className="font-display text-xl font-bold text-ink">No family archive yet</h2>
+          <p className="text-sm text-ink/55">
+            Create a family space to invite people and start saving memories together.
+          </p>
+          <Link href="/onboarding" className="btn btn-primary inline-flex">
+            Create family archive
+          </Link>
+        </section>
+      )}
+
+      {hasFamily && families.length > 1 && (
         <section className="glass-card p-6">
           <SelectField
             label="Active family"
@@ -84,6 +97,7 @@ export default function FamilyPage() {
         </section>
       )}
 
+      {hasFamily && (
       <section className="glass-card p-6">
         <h2 className="font-display text-xl font-bold text-ink">
           {family?.name || 'No family selected'}
@@ -92,7 +106,9 @@ export default function FamilyPage() {
           Share your archive with the people who were actually there.
         </p>
       </section>
+      )}
 
+      {hasFamily && (
       <section className="glass-card space-y-4 p-6">
         <h3 className="font-display text-lg font-bold">Invite member</h3>
         <Input
@@ -143,6 +159,7 @@ export default function FamilyPage() {
           )}
         </AnimatePresence>
       </section>
+      )}
     </PageMotion>
   )
 }

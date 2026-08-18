@@ -16,7 +16,7 @@ import { EMPTY_TRASH } from '@/lib/quotes'
 export default function SettingsPage() {
   const { user, signOut } = useAuth()
   const { displayName, initials } = useDisplayName()
-  const { family, familyId } = useFamily()
+  const { family, familyId, hasFamily } = useFamily()
   const router = useRouter()
   const { data: trash = [] } = useGetDeletedMemories(familyId || '')
   const restore = useRestoreMemory()
@@ -50,9 +50,18 @@ export default function SettingsPage() {
         </Link>
       </section>
 
-      <section className="glass-card space-y-2 p-6">
+      <section className="glass-card space-y-3 p-6">
         <h2 className="font-display text-xl font-bold">Family</h2>
-        <p className="text-ink/60">{family?.name || 'No family selected yet'}</p>
+        {hasFamily ? (
+          <p className="text-ink/60">{family?.name}</p>
+        ) : (
+          <>
+            <p className="text-ink/60">No family archive yet.</p>
+            <Link href="/onboarding" className="btn btn-primary inline-flex">
+              Create family archive
+            </Link>
+          </>
+        )}
       </section>
 
       <section className="glass-card space-y-4 p-6">

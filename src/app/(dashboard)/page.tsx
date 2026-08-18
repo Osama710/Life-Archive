@@ -11,10 +11,29 @@ import { EMPTY_HOME } from '@/lib/quotes'
 
 export default function DashboardHomePage() {
   const { displayName } = useDisplayName()
-  const { family, familyId, child, children, setChildId } = useFamily()
-  const { data } = useGetMemories(familyId || '', 5, 0)
+  const { family, familyId, child, children, setChildId, hasFamily, isLoading } = useFamily()
+  const { data } = useGetMemories(familyId || '', 5, 0, hasFamily)
   const recent = data?.memories || []
   const firstName = displayName.split(' ')[0]
+
+  if (!isLoading && !hasFamily) {
+    return (
+      <PageMotion className="space-y-6">
+        <PageHeader
+          showBrand
+          title={`Hey ${firstName} 👋`}
+          subtitle="Name your family archive and add your first child to get started."
+        />
+        <EmptyState
+          emoji="🏡"
+          title="Create your family archive"
+          subtitle="You don't have a family space yet. Set one up in under a minute."
+          cta="Set up family"
+          href="/onboarding"
+        />
+      </PageMotion>
+    )
+  }
 
   return (
     <PageMotion className="space-y-10">

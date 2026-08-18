@@ -7,19 +7,22 @@ import { LOADER_QUOTES } from "@/lib/quotes";
 interface LoaderProps {
   fullScreen?: boolean;
   label?: string;
+  message?: string;
   size?: "sm" | "md" | "lg";
 }
 
 export function Loader({
   fullScreen = false,
   label = "Loading",
+  message,
   size = "md",
 }: LoaderProps) {
   const [quote, setQuote] = useState<string>(LOADER_QUOTES[0]);
 
   useEffect(() => {
+    if (message) return;
     setQuote(LOADER_QUOTES[Math.floor(Math.random() * LOADER_QUOTES.length)]!);
-  }, []);
+  }, [message]);
 
   const ringSize = size === "sm" ? "size-8" : size === "lg" ? "size-16" : "size-12";
 
@@ -50,7 +53,7 @@ export function Loader({
         transition={{ delay: 0.15 }}
         className="max-w-xs text-center text-sm font-medium text-ink/55"
       >
-        {quote}
+        {message ?? quote}
       </motion.p>
       <span className="sr-only">{label}</span>
     </div>

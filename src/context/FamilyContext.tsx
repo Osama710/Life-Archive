@@ -12,8 +12,10 @@ interface FamilyContextValue {
   childId: string | null
   family: Family | null
   child: Child | null
+  hasFamily: boolean
   setFamilyId: (id: string) => void
   setChildId: (id: string | null) => void
+  clearFamilySelection: () => void
   isLoading: boolean
 }
 
@@ -31,6 +33,12 @@ function readStoredChildId() {
   return localStorage.getItem(CHILD_KEY)
 }
 
+function clearStoredFamilySelection() {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem(FAMILY_KEY)
+  localStorage.removeItem(CHILD_KEY)
+}
+
 export function FamilyProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
   const { data: families = [], isLoading: familiesLoading } = useGetFamilies(!!user)
@@ -38,40 +46,46 @@ export function FamilyProvider({ children }: { children: React.ReactNode }) {
   const [childId, setChildIdState] = useState<string | null>(null)
   const { data: kids = [], isLoading: childrenLoading } = useGetChildren(familyId || '')
 
+  const clearFamilySelection = () => {
+    clearStoredFamilySelection()
+    setFamilyIdState(null)
+    setChildIdState(null)
+  }
+
   useEffect(() => {
     if (!user) {
-      setFamilyIdState(null)
+      clearFamilySelection()
+      return
+    }
+
+    if (familiesLoading) return
+
+    if (families.length === 0) {
+      clearFamilySelection()
+      return
+    }
+
+    const stored = readStoredFamilyId()
+    const validStored = stored && families.some((f) => f.id === stored)
+    const nextFamilyId = validStored ? stored : families[0]!.id
+
+    setFamilyIdState(nextFamilyId)
+    localStorage.setItem(FAMILY_KEY, nextFamilyId)
+  }, [user, families, familiesLoading])
+
+  useEffect(() => {
+    if (!familyId) {
       setChildIdState(null)
       return
     }
 
-    const storedFamily = readStoredFamilyId()
-    if (storedFamily) setFamilyIdState(storedFamily)
+    if (childrenLoading) return
 
-    const storedChild = readStoredChildId()
-    if (storedChild) setChildIdState(storedChild)
-  }, [user])
-
-  useEffect(() => {
-    if (!user || familiesLoading) return
-
-    if (families.length === 0) return
-
-    const stored = readStoredFamilyId()
-    if (stored && families.some((f) => f.id === stored)) {
-      setFamilyIdState(stored)
+    if (kids.length === 0) {
+      setChildIdState(null)
+      localStorage.removeItem(CHILD_KEY)
       return
     }
-
-    setFamilyIdState(families[0]!.id)
-  }, [user, families, familiesLoading])
-
-  useEffect(() => {
-    if (!familyId) return
-
-    localStorage.setItem(FAMILY_KEY, familyId)
-
-    if (childrenLoading) return
 
     const storedChild = readStoredChildId()
     if (storedChild && kids.some((c) => c.id === storedChild)) {
@@ -79,17 +93,23 @@ export function FamilyProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    setChildIdState(kids[0]?.id ?? null)
+    const nextChildId = kids[0]!.id
+    setChildIdState(nextChildId)
+    localStorage.setItem(CHILD_KEY, nextChildId)
   }, [familyId, kids, childrenLoading])
+
+  const family = families.find((f) => f.id === familyId) ?? null
+  const hasFamily = !!family
 
   const value = useMemo<FamilyContextValue>(
     () => ({
       families,
       children: kids,
-      familyId,
-      childId,
-      family: families.find((f) => f.id === familyId) ?? null,
-      child: kids.find((c) => c.id === childId) ?? null,
+      familyId: hasFamily ? familyId : null,
+      childId: hasFamily ? childId : null,
+      family,
+      child: hasFamily ? (kids.find((c) => c.id === childId) ?? null) : null,
+      hasFamily,
       setFamilyId: (id) => {
         setFamilyIdState(id)
         localStorage.setItem(FAMILY_KEY, id)
@@ -99,9 +119,10 @@ export function FamilyProvider({ children }: { children: React.ReactNode }) {
         if (id) localStorage.setItem(CHILD_KEY, id)
         else localStorage.removeItem(CHILD_KEY)
       },
+      clearFamilySelection,
       isLoading: familiesLoading || (!!familyId && childrenLoading),
     }),
-    [families, kids, familyId, childId, familiesLoading, childrenLoading],
+    [families, kids, familyId, childId, family, hasFamily, familiesLoading, childrenLoading],
   )
 
   return <FamilyContext.Provider value={value}>{children}</FamilyContext.Provider>
