@@ -44,7 +44,23 @@ export const useGetFamilies = (enabled = true) =>
   useQuery({
     queryKey: ['families'],
     enabled,
+    refetchOnMount: 'always',
     queryFn: async () => {
+      const { data: rpcData, error: rpcError } = await supabase.rpc('get_my_families')
+
+      if (!rpcError && rpcData) {
+        return rpcData.map(mapFamily)
+      }
+
+      if (
+        rpcError &&
+        rpcError.code !== 'PGRST202' &&
+        !rpcError.message.includes('get_my_families') &&
+        !rpcError.message.includes('Could not find the function')
+      ) {
+        throw rpcError
+      }
+
       const { data, error } = await supabase
         .from('families')
         .select('*')
@@ -166,8 +182,10 @@ export const useCreateChild = () => {
 
       throw new Error(getErrorMessage(error, 'Could not create child'))
     },
-    onSuccess: (data) =>
-      queryClient.invalidateQueries({ queryKey: ['children', data.familyId] }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['children', data.familyId] })
+      queryClient.invalidateQueries({ queryKey: ['families'] })
+    },
   })
 }
 

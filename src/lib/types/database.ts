@@ -371,6 +371,10 @@ export type Database = {
         };
         Returns: Tables<"children">;
       };
+      get_my_families: {
+        Args: Record<string, never>;
+        Returns: Tables<"families">[];
+      };
       has_family_role: {
         Args: { target_family_id: string; allowed_roles: FamilyRole[] };
         Returns: boolean;

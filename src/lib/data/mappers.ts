@@ -2,12 +2,13 @@ import type { Tables } from "@/lib/types/database";
 import type { Child, Collection, Family, Memory, MemoryMedia } from "@/lib/types/db";
 
 export function mapFamily(row: Tables<"families">): Family {
+  const now = new Date().toISOString()
   return {
     id: row.id,
     name: row.name,
     createdBy: row.created_by,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: row.created_at ?? now,
+    updatedAt: row.updated_at ?? now,
   };
 }
 
