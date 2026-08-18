@@ -64,18 +64,20 @@ export function mapMemory(
     milestoneId: row.milestone_id ?? undefined,
     title: row.title,
     description: row.description ?? undefined,
-    memoryDate: row.memory_date,
+    memoryDate:
+      row.memory_date ??
+      (row.created_at ? row.created_at.slice(0, 10) : new Date().toISOString().slice(0, 10)),
     memoryTime: row.memory_time ?? undefined,
     location: row.location ?? undefined,
     mood: row.mood ?? undefined,
-    status: row.status,
-    isFavorite: row.is_favorite,
-    isPrivate: row.is_private,
+    status: row.status ?? 'published',
+    isFavorite: row.is_favorite ?? false,
+    isPrivate: row.is_private ?? true,
     createdBy: row.created_by,
     updatedBy: row.updated_by ?? undefined,
-    version: row.version,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    version: row.version ?? 1,
+    createdAt: row.created_at ?? new Date().toISOString(),
+    updatedAt: row.updated_at ?? new Date().toISOString(),
     media: mediaRows?.map(mapMemoryMedia),
   };
 }

@@ -199,35 +199,52 @@ export const useGetMemories = (
     queryKey: ['memories', familyId, offset],
     enabled: enabled && !!familyId,
     queryFn: async () => {
-      const base = () =>
-        supabase
-          .from('memories')
-          .select('*', { count: 'exact' })
-          .eq('family_id', familyId)
-          .is('deleted_at', null)
-          .order('memory_date', { ascending: false })
-          .range(offset, offset + limit - 1)
+      const { data: rpcData, error: rpcError } = await supabase.rpc('get_family_memories', {
+        p_family_id: familyId,
+        p_limit: limit,
+        p_offset: offset,
+      })
 
-      const withMedia = await supabase
+      if (!rpcError) {
+        const rows = rpcData ?? []
+        return {
+          memories: rows.map((row) => mapMemory(row)),
+          total: rows.length,
+        }
+      }
+
+      const rpcMissing =
+        rpcError.code === 'PGRST202' ||
+        rpcError.message.includes('get_family_memories') ||
+        rpcError.message.includes('Could not find the function')
+
+      if (!rpcMissing) {
+        throw rpcError
+      }
+
+      let result = await supabase
         .from('memories')
-        .select('*, memory_media(*)', { count: 'exact' })
+        .select('*', { count: 'exact' })
         .eq('family_id', familyId)
         .is('deleted_at', null)
         .order('memory_date', { ascending: false })
         .range(offset, offset + limit - 1)
 
-      const result =
-        withMedia.error &&
-        (withMedia.error.code === 'PGRST200' ||
-          withMedia.error.message.includes('memory_media') ||
-          withMedia.error.message.includes('relationship'))
-          ? await base()
-          : withMedia
+      if (result.error?.message.includes('deleted_at') || result.error?.code === '42703') {
+        result = await supabase
+          .from('memories')
+          .select('*', { count: 'exact' })
+          .eq('family_id', familyId)
+          .order('memory_date', { ascending: false })
+          .range(offset, offset + limit - 1)
+      }
 
       if (result.error) throw result.error
+
+      const rows = result.data ?? []
       return {
-        memories: (result.data ?? []).map((row) => mapMemory(row)),
-        total: result.count || 0,
+        memories: rows.map((row) => mapMemory(row)),
+        total: result.count || rows.length,
       }
     },
   })

@@ -375,6 +375,14 @@ export type Database = {
         Args: Record<string, never>;
         Returns: Tables<"families">[];
       };
+      get_family_memories: {
+        Args: {
+          p_family_id: string;
+          p_limit?: number;
+          p_offset?: number;
+        };
+        Returns: Tables<"memories">[];
+      };
       has_family_role: {
         Args: { target_family_id: string; allowed_roles: FamilyRole[] };
         Returns: boolean;

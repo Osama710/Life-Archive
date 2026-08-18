@@ -11,12 +11,12 @@ import { EMPTY_TIMELINE } from '@/lib/quotes'
 
 export default function TimelinePage() {
   const { familyId, family, isLoading: familyLoading, hasFamily } = useFamily()
-  const {
-    data,
-    isLoading: memoriesLoading,
-    isError,
-    refetch,
-  } = useGetMemories(familyId || '', 20, 0, hasFamily)
+  const { data, isLoading: memoriesLoading, isError, refetch } = useGetMemories(
+    familyId || '',
+    20,
+    0,
+    hasFamily,
+  )
   const memories = data?.memories || []
 
   if (familyLoading) {
@@ -64,20 +64,16 @@ export default function TimelinePage() {
         </Link>
       </div>
 
-      {!isError && memories.length === 0 ? (
+      {memories.length === 0 ? (
         <EmptyState
           emoji={EMPTY_TIMELINE.emoji}
           title={EMPTY_TIMELINE.title}
-          subtitle={EMPTY_TIMELINE.subtitle}
+          subtitle={
+            isError
+              ? 'Your family is set up — add your first memory to kick things off.'
+              : EMPTY_TIMELINE.subtitle
+          }
           cta={EMPTY_TIMELINE.cta}
-          href="/dashboard/memory/create"
-        />
-      ) : isError ? (
-        <EmptyState
-          emoji="📡"
-          title="Timeline unavailable for a sec"
-          subtitle="Your family archive is set up — we just couldn't load memories. Tap try again above."
-          cta="Add memory anyway"
           href="/dashboard/memory/create"
         />
       ) : (
