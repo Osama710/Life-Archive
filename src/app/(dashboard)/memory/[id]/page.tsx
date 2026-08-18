@@ -8,6 +8,7 @@ import { PageMotion } from '@/components/PageMotion'
 import { Loader } from '@/components/Loader'
 import { EmptyState } from '@/components/EmptyState'
 import { Button } from '@/components/Button'
+import { MemoryMediaGallery } from '@/components/MemoryMediaGallery'
 
 export default function MemoryDetailPage() {
   const params = useParams<{ id: string }>()
@@ -31,29 +32,14 @@ export default function MemoryDetailPage() {
   }
 
   return (
-    <PageMotion className="mx-auto max-w-3xl">
+    <PageMotion className="mx-auto max-w-3xl space-y-6">
       <BackLink href="/dashboard/timeline" label="Timeline" />
 
-      <article className="glass-card overflow-hidden p-0">
-        {memory.media && memory.media.length > 0 && (
-          <div className="grid gap-1 sm:grid-cols-2">
-            {memory.media.map((m) =>
-              m.mediaType === 'video' ? (
-                <video key={m.id} src={m.secureUrl} controls className="w-full object-cover" />
-              ) : (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={m.id}
-                  src={m.secureUrl || m.url}
-                  alt={m.fileName || memory.title}
-                  className="aspect-video w-full object-cover"
-                />
-              ),
-            )}
-          </div>
-        )}
+      {memory.media && memory.media.length > 0 && (
+        <MemoryMediaGallery media={memory.media} title={memory.title} />
+      )}
 
-        <div className="p-6 sm:p-8">
+      <article className="glass-card p-6 sm:p-8">
           <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold text-ink/50">
@@ -94,7 +80,6 @@ export default function MemoryDetailPage() {
               Move to trash
             </Button>
           </div>
-        </div>
       </article>
     </PageMotion>
   )

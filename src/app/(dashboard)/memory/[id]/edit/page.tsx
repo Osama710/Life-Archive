@@ -2,6 +2,7 @@
 
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@/context/AuthContext'
 import { useGetMemory, useUpdateMemory } from '@/hooks/useApi'
 import { BackLink } from '@/components/BackLink'
@@ -12,12 +13,16 @@ import { EmptyState } from '@/components/EmptyState'
 import { Input } from '@/components/Input'
 import { TextareaField } from '@/components/TextareaField'
 import { Button } from '@/components/Button'
+import { MemoryMediaGallery } from '@/components/MemoryMediaGallery'
+import { getErrorMessage } from '@/lib/errors'
+import { uploadMemoryMediaBatch } from '@/lib/uploads/memoryMedia'
 
 const MOODS = ['😊', '😄', '😍', '😢', '🤔', '🥹', '🔥', '✨']
 
 export default function MemoryEditPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { user } = useAuth()
   const { data: memory, isLoading, isError } = useGetMemory(params.id)
   const update = useUpdateMemory()
@@ -27,6 +32,8 @@ export default function MemoryEditPage() {
   const [location, setLocation] = useState('')
   const [desc, setDesc] = useState('')
   const [error, setError] = useState('')
+  const [newFiles, setNewFiles] = useState<File[]>([])
+  const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
     if (!memory) return
@@ -74,10 +81,29 @@ export default function MemoryEditPage() {
     }
   }
 
+  const addPhotos = async () => {
+    if (newFiles.length === 0) return
+    setError('')
+    setUploading(true)
+    try {
+      await uploadMemoryMediaBatch(memory.id, newFiles)
+      setNewFiles([])
+      await queryClient.invalidateQueries({ queryKey: ['memory', memory.id] })
+    } catch (err) {
+      setError(getErrorMessage(err, 'Could not upload photos'))
+    } finally {
+      setUploading(false)
+    }
+  }
+
   return (
-    <PageMotion className="mx-auto max-w-2xl">
+    <PageMotion className="mx-auto max-w-2xl space-y-6">
       <BackLink href={`/dashboard/memory/${memory.id}`} label="Back to memory" />
       <PageHeader title="Edit memory" subtitle="Tweak the details — the story stays yours." />
+
+      {memory.media && memory.media.length > 0 && (
+        <MemoryMediaGallery media={memory.media} title={memory.title} />
+      )}
 
       <div className="glass-card space-y-2 p-6">
         <Input
@@ -126,6 +152,29 @@ export default function MemoryEditPage() {
           onChange={(e) => setDesc(e.target.value)}
           rows={5}
         />
+        <div className="mb-4">
+          <label className="form-label" htmlFor="new-media">
+            Add more photos or videos
+          </label>
+          <input
+            id="new-media"
+            type="file"
+            multiple
+            accept="image/*,video/*"
+            className="input-field file:mr-4 file:rounded-xl file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:font-semibold file:text-primary"
+            onChange={(e) => setNewFiles(Array.from(e.target.files ?? []))}
+          />
+          {newFiles.length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <p className="text-sm text-ink/55">
+                {newFiles.length} new file{newFiles.length === 1 ? '' : 's'} ready to upload
+              </p>
+              <Button type="button" disabled={uploading} onClick={addPhotos}>
+                {uploading ? 'Uploading…' : 'Upload'}
+              </Button>
+            </div>
+          )}
+        </div>
         {error && (
           <p className="alert alert-error text-sm" role="alert">
             {error}

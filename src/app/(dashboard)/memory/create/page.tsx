@@ -17,6 +17,7 @@ import { SelectField } from '@/components/SelectField'
 import { Button } from '@/components/Button'
 import { Loader } from '@/components/Loader'
 import { getErrorMessage } from '@/lib/errors'
+import { uploadMemoryMediaBatch } from '@/lib/uploads/memoryMedia'
 
 const TEMPLATES = [
   { id: 'first-smile', icon: '😊', title: 'First Smile' },
@@ -46,56 +47,7 @@ export default function MemoryCreatePage() {
   const [location, setLocation] = useState('')
   const [prompts, setPrompts] = useState<Record<string, string>>({})
   const [error, setError] = useState('')
-  const [file, setFile] = useState<File | null>(null)
-
-  const uploadMedia = async (memoryId: string, selected: File) => {
-    const signRes = await fetch('/api/uploads/sign', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        memoryId,
-        fileName: selected.name,
-        mimeType: selected.type || 'application/octet-stream',
-      }),
-    })
-    const sign = await signRes.json()
-    if (!signRes.ok) throw new Error(sign.error || 'Upload sign failed')
-
-    const form = new FormData()
-    form.append('file', selected)
-    form.append('api_key', sign.apiKey)
-    form.append('timestamp', String(sign.timestamp))
-    form.append('signature', sign.signature)
-    form.append('folder', sign.folder)
-    const cloudRes = await fetch(
-      `https://api.cloudinary.com/v1_1/${sign.cloudName}/auto/upload`,
-      { method: 'POST', body: form },
-    )
-    const cloud = await cloudRes.json()
-    if (!cloudRes.ok) throw new Error(cloud.error?.message || 'Cloudinary upload failed')
-
-    const completeRes = await fetch('/api/uploads/complete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        memoryId,
-        mediaType: selected.type.startsWith('video/') ? 'video' : 'photo',
-        providerAssetId: cloud.public_id,
-        url: cloud.url,
-        secureUrl: cloud.secure_url,
-        thumbnailUrl: cloud.secure_url,
-        fileName: selected.name,
-        mimeType: selected.type,
-        bytes: cloud.bytes,
-        width: cloud.width,
-        height: cloud.height,
-      }),
-    })
-    if (!completeRes.ok) {
-      const err = await completeRes.json()
-      throw new Error(err.error || 'Could not save media')
-    }
-  }
+  const [files, setFiles] = useState<File[]>([])
 
   const handleSave = async () => {
     if (!user || !familyId) {
@@ -138,15 +90,16 @@ export default function MemoryCreatePage() {
 
       queryClient.setQueryData(['memory', memory.id], memory)
 
-      if (file) {
-        setFinishMessage('Uploading your photo…')
+      if (files.length > 0) {
         try {
-          await uploadMedia(memory.id, file)
+          await uploadMemoryMediaBatch(memory.id, files, (current, total) => {
+            setFinishMessage(`Uploading photo ${current} of ${total}…`)
+          })
           await queryClient.invalidateQueries({ queryKey: ['memory', memory.id] })
         } catch (err) {
           setIsFinishing(false)
           setError(
-            `Memory saved, but photo upload failed: ${getErrorMessage(err, 'Unknown error')}. You can open the memory and try adding media again later.`,
+            `Memory saved, but some uploads failed: ${getErrorMessage(err, 'Unknown error')}. You can open the memory and add more photos from edit.`,
           )
           router.replace(`/dashboard/memory/${memory.id}`)
           return
@@ -308,15 +261,22 @@ export default function MemoryCreatePage() {
               <GuidedPrompts memoryType={templateId} onAnswersChange={setPrompts} />
               <div className="mb-4">
                 <label className="form-label" htmlFor="media">
-                  Photo or video (optional)
+                  Photos or videos (optional)
                 </label>
                 <input
                   id="media"
                   type="file"
+                  multiple
                   accept="image/*,video/*"
                   className="input-field file:mr-4 file:rounded-xl file:border-0 file:bg-primary/10 file:px-4 file:py-2 file:font-semibold file:text-primary"
-                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
                 />
+                {files.length > 0 && (
+                  <p className="mt-2 text-sm text-ink/55">
+                    {files.length} file{files.length === 1 ? '' : 's'} selected — great for events
+                    like Aqiqa with many photos.
+                  </p>
+                )}
               </div>
               {error && (
                 <p className="alert alert-error text-sm" role="alert">
