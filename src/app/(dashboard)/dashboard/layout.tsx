@@ -15,7 +15,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative mx-auto min-h-dvh max-w-lg text-ink">
-      <main id="main-content" className="pb-[calc(5.75rem+env(safe-area-inset-bottom))]">
+      <main id="main-content" className="pb-[calc(5.25rem+env(safe-area-inset-bottom))]">
         <DashboardMobileHeader displayName={displayName} />
         <div className="px-4 py-5">
           <DashboardPageTransition>{children}</DashboardPageTransition>

@@ -20,12 +20,11 @@ const mobileNavigation: {
   label: string;
   href: string;
   icon: LucideIcon;
-  col: string;
 }[] = [
-  { label: "Home", href: "/dashboard", icon: Home, col: "col-start-1" },
-  { label: "Timeline", href: "/dashboard/timeline", icon: BookOpen, col: "col-start-2" },
-  { label: "Explore", href: "/dashboard/more", icon: Compass, col: "col-start-4" },
-  { label: "You", href: "/dashboard/settings", icon: Settings, col: "col-start-5" },
+  { label: "Home", href: "/dashboard", icon: Home },
+  { label: "Timeline", href: "/dashboard/timeline", icon: BookOpen },
+  { label: "Explore", href: "/dashboard/more", icon: Compass },
+  { label: "You", href: "/dashboard/settings", icon: Settings },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -42,83 +41,85 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
-function NavItem({
-  label,
-  href,
-  icon: Icon,
-  active,
-  className,
-}: {
-  label: string;
-  href: string;
-  icon: LucideIcon;
-  active: boolean;
-  className: string;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={`${className} flex min-h-[3.25rem] flex-col items-center justify-end gap-1 px-1 pb-1.5 pt-2 transition-colors`}
-    >
-      <Icon
-        aria-hidden="true"
-        size={22}
-        strokeWidth={active ? 2.25 : 1.75}
-        className={active ? "text-ink" : "text-ink/35"}
-      />
-      <span
-        className={`text-[10px] font-medium tracking-tight ${
-          active ? "text-ink" : "text-ink/40"
-        }`}
-      >
-        {label}
-      </span>
-      <span
-        aria-hidden="true"
-        className={`h-0.5 rounded-full transition-all duration-200 ${
-          active ? "w-5 bg-primary" : "w-0 bg-transparent"
-        }`}
-      />
-    </Link>
-  );
-}
-
 interface MobileBottomNavProps {
   fabHref: string;
   fabLabel: string;
 }
 
+/** Single outline: flat top → notch around FAB → flat top → rounded dock */
+const DOCK_OUTLINE =
+  "M 22 34 L 118 34 C 118 34 132 8 180 8 C 228 8 242 34 242 34 L 338 34 Q 352 34 352 48 L 352 66 Q 352 76 338 76 L 22 76 Q 8 76 8 66 L 8 48 Q 8 34 22 34 Z";
+
 export function MobileBottomNav({ fabHref, fabLabel }: MobileBottomNavProps) {
   const pathname = usePathname();
+  const leftItems = mobileNavigation.slice(0, 2);
+  const rightItems = mobileNavigation.slice(2);
 
   return (
-    <nav
-      aria-label="App navigation"
-      className="app-chrome fixed inset-x-0 bottom-0 z-40 border-t shadow-[0_-4px_24px_rgba(26,22,37,0.04)]"
-    >
-      <div className="relative mx-auto grid max-w-lg grid-cols-5 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1">
-        {mobileNavigation.map(({ label, href, icon, col }) => (
-          <NavItem
-            key={href}
-            label={label}
-            href={href}
-            icon={icon}
-            active={isActive(pathname, href)}
-            className={col}
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 mx-auto max-w-lg px-3 pb-[max(0.65rem,env(safe-area-inset-bottom))]">
+      <div className="pointer-events-auto relative h-[4.75rem]">
+        <svg
+          className="absolute inset-0 h-full w-full drop-shadow-[0_-4px_20px_rgba(26,22,37,0.06)]"
+          viewBox="0 0 360 84"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d={DOCK_OUTLINE} className="fill-cream" />
+          <path
+            d={DOCK_OUTLINE}
+            fill="none"
+            className="stroke-ink/[0.08]"
+            strokeWidth="1.25"
+            vectorEffect="non-scaling-stroke"
           />
-        ))}
+        </svg>
 
-        <div className="col-start-3 flex items-end justify-center pb-1">
-          <Link
-            href={fabHref}
-            aria-label={fabLabel}
-            className="flex size-[3.25rem] -translate-y-3 items-center justify-center rounded-full bg-gradient-brand text-white shadow-lift transition active:scale-95"
-          >
-            <Plus aria-hidden="true" size={24} strokeWidth={2.5} />
-          </Link>
-        </div>
+        <Link
+          href={fabHref}
+          aria-label={fabLabel}
+          className="absolute left-1/2 top-0 z-20 flex size-[3.35rem] -translate-x-1/2 -translate-y-[38%] items-center justify-center rounded-full bg-gradient-brand text-white shadow-[0_10px_28px_rgba(124,58,237,0.32)] ring-[5px] ring-cream transition active:scale-95"
+        >
+          <Plus aria-hidden="true" size={24} strokeWidth={2.75} />
+        </Link>
+
+        <nav
+          aria-label="App navigation"
+          className="relative z-10 grid h-full grid-cols-4 items-end px-1 pb-2 pt-5"
+        >
+          {leftItems.map(({ label, href, icon: Icon }) => {
+            const active = isActive(pathname, href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={`flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1 text-[10px] font-semibold transition ${
+                  active ? "bg-primary/10 text-primary" : "text-ink/45 hover:text-ink/70"
+                }`}
+              >
+                <Icon aria-hidden="true" size={20} strokeWidth={active ? 2.5 : 2} />
+                {label}
+              </Link>
+            );
+          })}
+          {rightItems.map(({ label, href, icon: Icon }) => {
+            const active = isActive(pathname, href);
+            return (
+              <Link
+                key={href}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={`flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-2xl px-1 py-1 text-[10px] font-semibold transition ${
+                  active ? "bg-primary/10 text-primary" : "text-ink/45 hover:text-ink/70"
+                }`}
+              >
+                <Icon aria-hidden="true" size={20} strokeWidth={active ? 2.5 : 2} />
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
-    </nav>
+    </div>
   );
 }
