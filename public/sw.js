@@ -1,5 +1,19 @@
-const CACHE = 'life-archive-static-v2'
-const STATIC_ASSETS = ['/offline', '/manifest.json', '/icon-192.png', '/icon-512.png']
+const CACHE = 'life-archive-static-v6'
+const STATIC_ASSETS = [
+  '/offline',
+  '/manifest.json',
+  '/favicon.png',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/icon-maskable.png',
+  '/brand/logo-primary-560.png',
+  '/brand/logo-mark-192.png',
+  '/brand/svg/life-archive-primary.svg',
+  '/brand/svg/life-archive-mark.svg',
+  '/brand/svg/life-archive-icon.svg',
+  '/brand/svg/life-archive-monochrome.svg',
+  '/brand/svg/life-archive-reversed.svg',
+]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(STATIC_ASSETS)))
@@ -34,7 +48,11 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  if (url.pathname.startsWith('/_next/static/') || STATIC_ASSETS.includes(url.pathname)) {
+  if (
+    url.pathname.startsWith('/_next/static/') ||
+    url.pathname.startsWith('/brand/') ||
+    STATIC_ASSETS.includes(url.pathname)
+  ) {
     event.respondWith(
       caches.match(request).then(
         (cached) =>

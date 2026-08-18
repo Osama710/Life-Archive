@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AUTH_TAGLINES } from "@/lib/quotes";
 import { MeshBackground } from "@/components/MeshBackground";
+import { BrandLogo } from "@/components/BrandLogo";
 
 interface AuthShellProps {
   title: string;
@@ -30,13 +31,8 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
           className="flex flex-col justify-between px-6 py-10 sm:px-10 lg:w-[42%] lg:py-14"
         >
           <div>
-            <Link href="/" className="inline-flex items-center gap-2">
-              <span className="flex size-10 items-center justify-center rounded-2xl bg-gradient-brand text-lg shadow-lift">
-                📖
-              </span>
-              <span className="font-display text-xl font-bold tracking-tight text-ink">
-                Life Archive
-              </span>
+            <Link href="/" className="inline-block">
+              <BrandLogo variant="primary" height={36} priority />
             </Link>
           </div>
 

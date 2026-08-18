@@ -16,6 +16,8 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useDisplayName } from "@/hooks/useDisplayName";
 import { DashboardPageTransition } from "@/components/DashboardPageTransition";
+import { BrandLogo } from "@/components/BrandLogo";
+import { BRAND } from "@/lib/brand";
 
 const navigation = [
   { label: "Home", href: "/dashboard", icon: Home },
@@ -51,12 +53,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative min-h-dvh text-ink">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 flex-col border-r border-white/60 bg-white/70 px-5 py-6 backdrop-blur-xl lg:flex">
-        <Link href="/dashboard" className="mb-8 px-3">
-          <span className="font-display text-2xl font-bold tracking-tight gradient-text">
-            Life Archive
-          </span>
-          <span className="mt-1 block text-xs font-medium tracking-wide text-ink/45">
-            Core memories, zero cringe
+        <Link href="/dashboard" className="mb-8 block px-3">
+          <BrandLogo variant="primary" height={34} />
+          <span className="mt-2 block text-xs font-medium tracking-wide text-ink/45">
+            {BRAND.tagline}
           </span>
         </Link>
 

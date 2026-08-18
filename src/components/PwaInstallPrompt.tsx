@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Download, Share, X } from "lucide-react";
 import { Button } from "@/components/Button";
+import { AppIcon } from "@/components/BrandLogo";
 import { usePwaInstall } from "@/hooks/usePwaInstall";
 
 export function PwaInstallPrompt() {
@@ -47,9 +48,7 @@ export function PwaInstallPrompt() {
               </button>
 
               <div className="flex items-start gap-4 pr-8">
-                <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-brand text-2xl shadow-soft">
-                  📖
-                </span>
+                <AppIcon size={56} />
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary/80">
                     Install app

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 420">
+<defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#7C3AED"/><stop offset="55%" stop-color="#EC4899"/><stop offset="100%" stop-color="#FF6B6B"/>
+</linearGradient></defs>
+<g transform="translate(35,35) scale(.68)"><path d="M256 418 C256 350 225 315 183 283 C142 252 123 211 137 169 C150 130 184 108 219 116 C245 122 261 143 256 169 C251 143 267 122 293 116 C328 108 362 130 375 169 C389 211 370 252 329 283 C287 315 256 350 256 418" fill="none" stroke="url(#g)" stroke-width="34" stroke-linecap="round"/><circle cx="188" cy="156" r="15" fill="#7C3AED"/><circle cx="324" cy="156" r="15" fill="#FF6B6B"/><path d="M256 151 L264 171 L286 174 L269 188 L274 210 L256 198 L238 210 L243 188 L226 174 L248 171 Z" fill="url(#g)"/><path d="M174 333 C203 355 226 368 256 374 C286 368 309 355 338 333" fill="none" stroke="url(#g)" stroke-width="16" stroke-linecap="round"/></g>
+<text x="365" y="190" font-family="Outfit, Arial, sans-serif" font-size="92" font-weight="700" fill="#1A1625" letter-spacing="-2">Life Archive</text>
+<text x="370" y="246" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="25" font-weight="600" fill="#7C3AED" letter-spacing="3">YOUR FAMILY STORY, KEPT CLOSE</text>
+</svg>

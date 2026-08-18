@@ -6,6 +6,7 @@ import { FamilyProvider } from "@/context/FamilyContext";
 import { QueryProvider } from "@/context/QueryProvider";
 import { MeshBackground } from "@/components/MeshBackground";
 import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
+import { BRAND } from "@/lib/brand";
 import "./globals.css";
 
 const display = Outfit({
@@ -19,18 +20,30 @@ const sans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Life Archive",
+  title: BRAND.name,
   description: "Preserve your family's story across generations",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: BRAND.icons.favicon, sizes: "48x48", type: "image/png" },
+      { url: BRAND.icons.pwa192, sizes: "192x192", type: "image/png" },
+      { url: BRAND.icons.pwa512, sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: BRAND.icons.pwa192, sizes: "192x192", type: "image/png" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Life Archive",
+    title: BRAND.shortName,
   },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#7C3AED",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FDF8F3" },
+    { media: "(prefers-color-scheme: dark)", color: "#FDF8F3" },
+  ],
+  colorScheme: "light",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -44,10 +57,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <head>
-        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="48x48" />
+        <link rel="apple-touch-icon" href="/icon-192.png" sizes="192x192" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="theme-color" content="#FDF8F3" />
         <meta name="apple-mobile-web-app-title" content="Life Archive" />
       </head>
       <body className="min-h-dvh bg-cream font-sans text-ink antialiased">
