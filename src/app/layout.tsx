@@ -5,6 +5,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { FamilyProvider } from "@/context/FamilyContext";
 import { QueryProvider } from "@/context/QueryProvider";
 import { MeshBackground } from "@/components/MeshBackground";
+import { PwaInstallPrompt } from "@/components/PwaInstallPrompt";
 import "./globals.css";
 
 const display = Outfit({
@@ -44,6 +45,10 @@ export default function RootLayout({
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <head>
         <link rel="apple-touch-icon" href="/icon-192.png" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="Life Archive" />
       </head>
       <body className="min-h-dvh bg-cream font-sans text-ink antialiased">
         <MeshBackground />
@@ -52,6 +57,7 @@ export default function RootLayout({
             <FamilyProvider>{children}</FamilyProvider>
           </AuthProvider>
         </QueryProvider>
+        <PwaInstallPrompt />
         <Script id="register-sw" strategy="afterInteractive">
           {`
             if ('serviceWorker' in navigator) {
