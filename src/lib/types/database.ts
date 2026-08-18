@@ -421,6 +421,14 @@ export type Database = {
         Args: { p_memory_id: string };
         Returns: { id: string; family_id: string }[];
       };
+      get_memory: {
+        Args: { p_id: string };
+        Returns: Tables<"memories">;
+      };
+      get_memory_media: {
+        Args: { p_memory_id: string };
+        Returns: Tables<"memory_media">[];
+      };
       has_family_role: {
         Args: { target_family_id: string; allowed_roles: FamilyRole[] };
         Returns: boolean;

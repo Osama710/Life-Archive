@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
-import { mapChild, mapCollection, mapFamily, mapMemory } from '@/lib/data/mappers'
+import { mapChild, mapCollection, mapFamily, mapMemory, mapMemoryMedia } from '@/lib/data/mappers'
 import { getErrorMessage } from '@/lib/errors'
 import type { Child, Memory } from '@/lib/types/db'
 import type { TablesUpdate } from '@/lib/types/database'
+import type { Tables } from '@/lib/types/database'
 
 const supabase = createClient()
 
@@ -249,19 +250,63 @@ export const useGetMemories = (
     },
   })
 
+async function fetchMemoryById(memoryId: string) {
+  const { data: rpcData, error: rpcError } = await supabase.rpc('get_memory', {
+    p_id: memoryId,
+  })
+
+  if (!rpcError && rpcData) {
+    const memory = mapMemory(rpcData as Tables<'memories'>)
+    const { data: mediaRows, error: mediaError } = await supabase.rpc('get_memory_media', {
+      p_memory_id: memoryId,
+    })
+
+    if (!mediaError && mediaRows?.length) {
+      return {
+        ...memory,
+        media: (mediaRows as Tables<'memory_media'>[]).map(mapMemoryMedia),
+      }
+    }
+
+    return memory
+  }
+
+  const rpcMissing =
+    rpcError?.code === 'PGRST202' ||
+    rpcError?.message.includes('get_memory') ||
+    rpcError?.message.includes('Could not find the function')
+
+  if (rpcError && !rpcMissing) {
+    throw rpcError
+  }
+
+  let result = await supabase.from('memories').select('*').eq('id', memoryId).single()
+
+  if (result.error?.message.includes('deleted_at') || result.error?.code === '42703') {
+    result = await supabase.from('memories').select('*').eq('id', memoryId).single()
+  }
+
+  if (result.error) throw result.error
+
+  const memory = mapMemory(result.data)
+  const mediaResult = await supabase
+    .from('memory_media')
+    .select('*')
+    .eq('memory_id', memoryId)
+    .order('sort_order', { ascending: true })
+
+  if (!mediaResult.error && mediaResult.data?.length) {
+    return { ...memory, media: mediaResult.data.map(mapMemoryMedia) }
+  }
+
+  return memory
+}
+
 export const useGetMemory = (memoryId: string) =>
   useQuery({
     queryKey: ['memory', memoryId],
     enabled: !!memoryId,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('memories')
-        .select('*, memory_media(*)')
-        .eq('id', memoryId)
-        .single()
-      if (error) throw error
-      return mapMemory(data)
-    },
+    queryFn: () => fetchMemoryById(memoryId),
   })
 
 export const useCreateMemory = () => {
@@ -322,8 +367,10 @@ export const useCreateMemory = () => {
 
       return mapMemory(inserted)
     },
-    onSuccess: (data) =>
-      queryClient.invalidateQueries({ queryKey: ['memories', data.familyId] }),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['memory', data.id], data)
+      queryClient.invalidateQueries({ queryKey: ['memories', data.familyId] })
+    },
   })
 }
 

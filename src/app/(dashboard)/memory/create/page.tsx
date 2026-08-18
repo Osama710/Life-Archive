@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCreateMemory } from '@/hooks/useApi'
 import { useAuth } from '@/context/AuthContext'
@@ -14,6 +15,7 @@ import { Input } from '@/components/Input'
 import { TextareaField } from '@/components/TextareaField'
 import { SelectField } from '@/components/SelectField'
 import { Button } from '@/components/Button'
+import { Loader } from '@/components/Loader'
 import { getErrorMessage } from '@/lib/errors'
 
 const TEMPLATES = [
@@ -29,10 +31,13 @@ const MOODS = ['😊', '😄', '😍', '😢', '🤔', '🥹', '🔥', '✨']
 
 export default function MemoryCreatePage() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { user } = useAuth()
   const { familyId, hasFamily, childId, children, setChildId } = useFamily()
   const create = useCreateMemory()
   const [step, setStep] = useState(0)
+  const [isFinishing, setIsFinishing] = useState(false)
+  const [finishMessage, setFinishMessage] = useState('Saving your memory…')
   const [templateId, setTemplateId] = useState('custom')
   const [title, setTitle] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
@@ -102,6 +107,9 @@ export default function MemoryCreatePage() {
       return
     }
     setError('')
+    setIsFinishing(true)
+    setFinishMessage('Saving your memory…')
+
     try {
       const promptText = Object.entries(prompts)
         .filter(([, answer]) => answer.trim())
@@ -123,24 +131,32 @@ export default function MemoryCreatePage() {
           createdBy: user.id,
         })
       } catch (err) {
+        setIsFinishing(false)
         setError(`Could not save memory: ${getErrorMessage(err, 'Unknown error')}`)
         return
       }
 
+      queryClient.setQueryData(['memory', memory.id], memory)
+
       if (file) {
+        setFinishMessage('Uploading your photo…')
         try {
           await uploadMedia(memory.id, file)
+          await queryClient.invalidateQueries({ queryKey: ['memory', memory.id] })
         } catch (err) {
+          setIsFinishing(false)
           setError(
             `Memory saved, but photo upload failed: ${getErrorMessage(err, 'Unknown error')}. You can open the memory and try adding media again later.`,
           )
-          router.push(`/dashboard/memory/${memory.id}`)
+          router.replace(`/dashboard/memory/${memory.id}`)
           return
         }
       }
 
-      router.push(`/dashboard/memory/${memory.id}`)
+      setFinishMessage('Opening your memory…')
+      router.replace(`/dashboard/memory/${memory.id}`)
     } catch (err) {
+      setIsFinishing(false)
       setError(getErrorMessage(err, 'Could not save memory'))
     }
   }
@@ -157,6 +173,10 @@ export default function MemoryCreatePage() {
         />
       </PageMotion>
     )
+  }
+
+  if (isFinishing) {
+    return <Loader fullScreen label="Saving memory" message={finishMessage} />
   }
 
   return (
@@ -310,10 +330,10 @@ export default function MemoryCreatePage() {
                 <Button
                   type="button"
                   onClick={handleSave}
-                  disabled={create.isPending}
+                  disabled={create.isPending || isFinishing}
                   className="flex-1"
                 >
-                  {create.isPending ? 'Saving…' : 'Save memory'}
+                  Save memory
                 </Button>
               </div>
             </div>
