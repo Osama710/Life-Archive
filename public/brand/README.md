@@ -1,31 +1,21 @@
 # Life Archive — Brand Assets
 
-Static files in **`public/`** (not Cloudinary).
+Generated from two master files:
 
-## Keep list (13 files)
+| Source | Use |
+|--------|-----|
+| `assets/logo-icon-source.png` | Square book icon (transparent) |
+| `assets/logo-primary-source.png` | Horizontal lockup with name |
 
-| File | Why |
-|------|-----|
-| `favicon.png` | Browser tab |
-| `icon-192.png` | PWA, Apple touch, SVG fallback |
-| `icon-512.png` | PWA install & splash |
-| `icon-maskable.png` | Android adaptive icon |
-| `brand/svg/life-archive-primary.svg` | UI logo (sidebar, auth) |
-| `brand/svg/life-archive-mark.svg` | Standalone mark |
-| `brand/svg/life-archive-icon.svg` | In-app icon |
-| `brand/svg/life-archive-monochrome.svg` | Future print/dark use |
-| `brand/svg/life-archive-reversed.svg` | Future dark header |
-| `brand/logo-primary-560.png` | PNG fallback if SVG fails |
-| `brand/logo-mark-192.png` | PNG fallback if SVG fails |
+## Regenerate all sizes
 
-## In code
-
-```tsx
-import { BrandLogo, AppIcon } from "@/components/BrandLogo";
+```bash
+npm run brand:assets
 ```
 
-SVG loads first; PNG fallback only on error.
+## Outputs
 
-## Cloudinary?
-
-User memory photos only — never app branding.
+- **PWA:** `favicon.png`, `icon-192.png`, `icon-512.png`, `icon-maskable.png`
+- **Icon:** `logo-icon-1024.png`, `logo-icon-512.png`, `logo-mark-192.png`, `logo-mark-560.png`
+- **Primary:** `logo-primary-560.png`, `logo-primary-1120.png`
+- **SVG:** `svg/life-archive-*.svg` (wrappers referencing PNG masters)

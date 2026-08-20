@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AUTH_TAGLINES } from "@/lib/quotes";
-import { BrandLogo } from "@/components/BrandLogo";
+import { AppBrandRow } from "@/components/AppBrandRow";
 
 interface AuthShellProps {
   title: string;
@@ -30,7 +30,7 @@ export function AuthShell({ title, subtitle, children }: AuthShellProps) {
         >
           <div>
             <Link href="/" className="inline-block">
-              <BrandLogo variant="primary" height={36} priority />
+              <AppBrandRow size={40} showTagline priority />
             </Link>
           </div>
 

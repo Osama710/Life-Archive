@@ -1,4 +1,4 @@
-const CACHE = 'life-archive-static-v6'
+const CACHE = 'life-archive-static-v12'
 const STATIC_ASSETS = [
   '/offline',
   '/manifest.json',
@@ -6,8 +6,12 @@ const STATIC_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
   '/icon-maskable.png',
-  '/brand/logo-primary-560.png',
+  '/brand/logo-icon-1024.png',
+  '/brand/logo-icon-512.png',
   '/brand/logo-mark-192.png',
+  '/brand/logo-mark-560.png',
+  '/brand/logo-primary-560.png',
+  '/brand/logo-primary-1120.png',
   '/brand/svg/life-archive-primary.svg',
   '/brand/svg/life-archive-mark.svg',
   '/brand/svg/life-archive-icon.svg',

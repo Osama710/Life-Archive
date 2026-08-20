@@ -20,10 +20,13 @@ export const BRAND = {
     monochrome: "/brand/svg/life-archive-monochrome.svg",
     reversed: "/brand/svg/life-archive-reversed.svg",
   },
-  /** Small PNG fallbacks if an SVG fails to load in the browser */
   logos: {
     primary: "/brand/logo-primary-560.png",
+    primaryLarge: "/brand/logo-primary-1120.png",
     mark: "/brand/logo-mark-192.png",
+    markLarge: "/brand/logo-mark-560.png",
+    icon512: "/brand/logo-icon-512.png",
+    icon1024: "/brand/logo-icon-1024.png",
   },
 } as const;
 
@@ -33,8 +36,8 @@ export const LOGO_SOURCES: Record<
   BrandLogoVariant,
   { svg: string; png: string }
 > = {
-  primary: { svg: BRAND.svg.primary, png: BRAND.logos.primary },
+  primary: { svg: BRAND.svg.primary, png: BRAND.logos.primaryLarge },
   mark: { svg: BRAND.svg.mark, png: BRAND.logos.mark },
-  icon: { svg: BRAND.svg.icon, png: BRAND.icons.pwa192 },
-  reversed: { svg: BRAND.svg.reversed, png: BRAND.icons.pwa192 },
+  icon: { svg: BRAND.svg.icon, png: BRAND.logos.icon512 },
+  reversed: { svg: BRAND.svg.reversed, png: BRAND.logos.mark },
 };

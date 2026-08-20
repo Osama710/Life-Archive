@@ -9,6 +9,7 @@ interface AppBrandRowProps {
   showTagline?: boolean;
   href?: string;
   className?: string;
+  priority?: boolean;
 }
 
 export function AppBrandRow({
@@ -16,10 +17,11 @@ export function AppBrandRow({
   showTagline = false,
   href,
   className = "",
+  priority = false,
 }: AppBrandRowProps) {
   const content = (
     <>
-      <AppIcon size={size} className="shrink-0" />
+      <AppIcon size={size} className="shrink-0" priority={priority} />
       <div className="min-w-0">
         <p className="truncate font-display text-base font-bold tracking-tight text-ink sm:text-lg">
           {BRAND.name}
