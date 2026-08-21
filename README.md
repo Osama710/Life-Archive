@@ -11,11 +11,25 @@ npm run dev
 
 Open http://localhost:3000
 
+### Media storage (Cloudflare R2)
+
+Add these to `.env.local` (see `.env.example`):
+
+```
+R2_ACCOUNT_ID=
+R2_ACCESS_KEY_ID=
+R2_SECRET_ACCESS_KEY=
+R2_BUCKET_NAME=life-archive
+R2_PUBLIC_DOMAIN=https://life-archive.{ACCOUNT_ID}.r2.dev
+```
+
+Photos are compressed in the browser, then uploaded directly to R2 (any size). Videos also upload directly to R2 with no size cap.
+
 ## Stack
 
 - **Frontend**: Next.js 14, React 18, TailwindCSS
 - **Backend**: Supabase (PostgreSQL)
-- **Storage**: Cloudinary
+- **Storage**: Cloudflare R2
 - **Deployment**: Vercel
 
 ## Milestones

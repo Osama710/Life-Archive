@@ -1,52 +1,83 @@
-export async function uploadMemoryMedia(memoryId: string, selected: File): Promise<void> {
-  const signRes = await fetch('/api/uploads/sign', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+import {
+  compressImage,
+  mediaTypeFromFile,
+  readImageDimensions,
+} from "@/lib/compression";
+
+async function uploadViaPresign(
+  memoryId: string,
+  file: File,
+  mediaType: "photo" | "video",
+  dimensions?: { width?: number; height?: number },
+) {
+  const mimeType = file.type || (mediaType === "video" ? "video/mp4" : "image/jpeg");
+
+  const presignRes = await fetch("/api/upload/presign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       memoryId,
-      fileName: selected.name,
-      mimeType: selected.type || 'application/octet-stream',
+      fileName: file.name,
+      mimeType,
     }),
-  })
-  const sign = await signRes.json()
-  if (!signRes.ok) throw new Error(sign.error || 'Upload sign failed')
+  });
 
-  const form = new FormData()
-  form.append('file', selected)
-  form.append('api_key', sign.apiKey)
-  form.append('timestamp', String(sign.timestamp))
-  form.append('signature', sign.signature)
-  form.append('folder', sign.folder)
+  const presign = await presignRes.json();
+  if (!presignRes.ok) {
+    throw new Error(presign.error || "Could not prepare upload");
+  }
 
-  const cloudRes = await fetch(
-    `https://api.cloudinary.com/v1_1/${sign.cloudName}/auto/upload`,
-    { method: 'POST', body: form },
-  )
-  const cloud = await cloudRes.json()
-  if (!cloudRes.ok) throw new Error(cloud.error?.message || 'Cloudinary upload failed')
+  const putRes = await fetch(presign.uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": mimeType },
+    body: file,
+  });
 
-  const completeRes = await fetch('/api/uploads/complete', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  if (!putRes.ok) {
+    throw new Error("Upload to storage failed. Check your connection and try again.");
+  }
+
+  const completeRes = await fetch("/api/upload/complete", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       memoryId,
-      mediaType: selected.type.startsWith('video/') ? 'video' : 'photo',
-      providerAssetId: cloud.public_id,
-      url: cloud.url,
-      secureUrl: cloud.secure_url,
-      thumbnailUrl: cloud.secure_url,
-      fileName: selected.name,
-      mimeType: selected.type,
-      bytes: cloud.bytes,
-      width: cloud.width,
-      height: cloud.height,
+      mediaType,
+      providerAssetId: presign.key,
+      url: presign.publicUrl,
+      secureUrl: presign.publicUrl,
+      thumbnailUrl: presign.publicUrl,
+      fileName: file.name,
+      mimeType,
+      bytes: file.size,
+      width: dimensions?.width,
+      height: dimensions?.height,
     }),
-  })
+  });
 
   if (!completeRes.ok) {
-    const err = await completeRes.json()
-    throw new Error(err.error || 'Could not save media')
+    const err = await completeRes.json();
+    throw new Error(err.error || "Could not save media");
   }
+}
+
+async function uploadPhoto(memoryId: string, file: File) {
+  const compressed = await compressImage(file);
+  const dimensions = await readImageDimensions(compressed);
+  await uploadViaPresign(memoryId, compressed, "photo", dimensions);
+}
+
+async function uploadVideo(memoryId: string, file: File) {
+  await uploadViaPresign(memoryId, file, "video");
+}
+
+export async function uploadMemoryMedia(memoryId: string, selected: File): Promise<void> {
+  if (mediaTypeFromFile(selected) === "video") {
+    await uploadVideo(memoryId, selected);
+    return;
+  }
+
+  await uploadPhoto(memoryId, selected);
 }
 
 export async function uploadMemoryMediaBatch(
@@ -55,7 +86,7 @@ export async function uploadMemoryMediaBatch(
   onProgress?: (current: number, total: number) => void,
 ): Promise<void> {
   for (let i = 0; i < files.length; i += 1) {
-    onProgress?.(i + 1, files.length)
-    await uploadMemoryMedia(memoryId, files[i]!)
+    onProgress?.(i + 1, files.length);
+    await uploadMemoryMedia(memoryId, files[i]!);
   }
 }

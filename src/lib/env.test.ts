@@ -7,12 +7,10 @@ describe("parsePublicEnv", () => {
       parsePublicEnv({
         NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
         NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
-        NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "life-archive",
       }),
     ).toEqual({
       NEXT_PUBLIC_SUPABASE_URL: "https://example.supabase.co",
       NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon-key",
-      NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: "life-archive",
     });
   });
 
